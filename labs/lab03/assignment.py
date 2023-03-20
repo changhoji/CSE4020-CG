@@ -26,8 +26,6 @@ in vec4 vout_color;
 
 out vec4 FragColor;
 
-uniform float u_variable;
-
 void main() {
     FragColor = vout_color;
 }

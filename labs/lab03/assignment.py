@@ -144,7 +144,6 @@ def main():
         
         t = glfwGetTime()
         temp = glm.sin(t)
-        print(temp)
         
         glUniform1f(u_variable_loc, temp)
         

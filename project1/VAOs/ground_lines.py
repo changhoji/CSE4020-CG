@@ -3,7 +3,7 @@ import glm
 import numpy as np
 import ctypes
 
-num_of_lines = 10
+num_of_lines = 20
 
 def prepare_vao_ground_lines():
     # prepare vertex data (in main memory)
@@ -14,11 +14,11 @@ def prepare_vao_ground_lines():
         i = float(i)
         
         temp = glm.array(glm.float32,                         
-            -10.0, 0.0, i, color, color, color,
-             10.0, 0.0, i, color, color, color,
+            -num_of_lines, 0.0, i, color, color, color,
+             num_of_lines, 0.0, i, color, color, color,
             
-            i, 0.0, -10.0, color, color, color,
-            i, 0.0,  10.0, color, color, color,
+            i, 0.0, -num_of_lines, color, color, color,
+            i, 0.0,  num_of_lines, color, color, color,
         )
         vertices = vertices.concat(temp)      
 

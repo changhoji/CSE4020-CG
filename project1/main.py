@@ -19,11 +19,12 @@ current_cursor = [0, 0]
 diff_cursor = [0, 0]
 
 g_cam_ang = 0.
-g_cam_ang2 = 0.
+g_cam_ang2 = 45.
 g_cam_height = .1
 g_translate = glm.vec3(0., 0., 0.)
 g_zoom = .1
 g_pan = glm.vec3(0., 0., 0.)
+g_distance = 1
 
 dr = 0
 
@@ -180,7 +181,7 @@ def main():
         
 
         # view matrix
-        V = glm.lookAt(glm.vec3(.1*np.sin(g_cam_ang)*np.cos(g_cam_ang2),.1*np.sin(g_cam_ang2)+g_cam_height,.1*np.cos(g_cam_ang)*np.cos(g_cam_ang2))+g_pan
+        V = glm.lookAt(glm.vec3(.1*np.sin(g_cam_ang)*np.sin(g_cam_ang2),.1*np.cos(g_cam_ang2),.1*np.cos(g_cam_ang)*np.sin(g_cam_ang2))+g_pan
                        , glm.vec3(0,0,0)+g_pan, glm.vec3(0,1,0))*glm.scale(glm.mat4(), glm.vec3(1., 1., 1.)*g_zoom)
         
         # current frame: P*V*I (now this is the world frame)

@@ -7,6 +7,7 @@ import numpy as np
 from shader import load_shaders
 # from callbacks import *
 from VAOs.ground_lines import *
+from VAOs.triangle import *
 
 # from glfw.GLFW import *
 # import glm
@@ -18,6 +19,7 @@ current_cursor = [0, 0]
 diff_cursor = [0, 0]
 
 g_cam_ang = 0.
+g_cam_ang2 = 0.
 g_cam_height = .1
 g_translate = glm.vec3(0., 0., 0.)
 g_zoom = .1
@@ -82,17 +84,16 @@ def mouse_button_callback(window, button, action, mod):
             right_button_state = 0
             
 def cursor_callback(window, xpos, ypos):
-    global current_cursor, diff_cursor, g_pan, g_cam_ang, dr
+    global current_cursor, diff_cursor, g_pan, g_cam_ang, g_cam_ang2, dr
     
     diff_cursor = [xpos-current_cursor[0], current_cursor[1]-ypos]
     
     if left_button_state:
-        g_cam_ang += diff_cursor[0]*.001
+        g_cam_ang += diff_cursor[0]*.01
+        g_cam_ang2 += diff_cursor[1]*.01
     if right_button_state:
         dr = diff_cursor[0]*.001
-        g_pan = glm.vec3(g_pan.x+dr*5*np.cos(-g_cam_ang), g_pan.y+diff_cursor[1]*.01, g_pan.z+dr*5*np.sin(-g_cam_ang))
-        print("dr: ", dr)
-        print("diff: ", diff_cursor)
+        g_pan = g_pan + glm.vec3(5*dr*np.cos(-g_cam_ang), diff_cursor[1]*.01, 5*dr*np.sin(-g_cam_ang))
     
     current_cursor = [xpos, ypos]
 
@@ -163,6 +164,7 @@ def main():
     
     # prepare vaos
     vao_ground_lines = prepare_vao_ground_lines()
+    vao_triangle = prepare_vao_triangle()
 
     # loop until the user closes the window
     while not glfwWindowShouldClose(window):
@@ -178,7 +180,7 @@ def main():
         
 
         # view matrix
-        V = glm.lookAt(glm.vec3(.1*np.sin(g_cam_ang),g_cam_height,.1*np.cos(g_cam_ang))+g_pan
+        V = glm.lookAt(glm.vec3(.1*np.sin(g_cam_ang)*np.cos(g_cam_ang2),.1*np.sin(g_cam_ang2)+g_cam_height,.1*np.cos(g_cam_ang)*np.cos(g_cam_ang2))+g_pan
                        , glm.vec3(0,0,0)+g_pan, glm.vec3(0,1,0))*glm.scale(glm.mat4(), glm.vec3(1., 1., 1.)*g_zoom)
         
         # current frame: P*V*I (now this is the world frame)
@@ -191,6 +193,20 @@ def main():
         # draw lines in xz plane
         glBindVertexArray(vao_ground_lines)
         glDrawArrays(GL_LINES, 0, num_of_lines*8+4)
+        
+        
+        
+        t = glfwGetTime()
+
+        # rotation
+        th = np.radians(t*90)
+        R = glm.rotate(th, glm.vec3(0,0,1))
+        MVP = P[P_index]*V*R
+        
+        glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
+        
+        glBindVertexArray(vao_triangle)
+        glDrawArrays(GL_TRIANGLES, 0, 3)
         
         # swap front and back buffers
         glfwSwapBuffers(window)

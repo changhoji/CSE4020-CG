@@ -19,7 +19,7 @@ current_cursor = [0, 0]
 diff_cursor = [0, 0]
 
 g_cam_ang = 0.
-g_cam_ang2 = 45.
+g_cam_ang2 = glm.degrees(45.)
 g_cam_height = .1
 g_translate = glm.vec3(0., 0., 0.)
 g_zoom = .1
@@ -216,7 +216,6 @@ def main():
         if (np.sin(g_cam_ang2) < 0):
             up_vec = glm.vec3(0, -1, 0)
         
-        print("angles: ", g_cam_ang, g_cam_ang2)
         # view matrix
         V = glm.lookAt(glm.vec3(.1*np.sin(g_cam_ang)*np.sin(g_cam_ang2),.1*np.cos(g_cam_ang2),.1*np.cos(g_cam_ang)*np.sin(g_cam_ang2))+g_pan
                        , glm.vec3(0,0,0)+g_pan, up_vec)*glm.scale(glm.mat4(), glm.vec3(1., 1., 1.)*g_zoom)

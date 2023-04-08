@@ -31,6 +31,39 @@ dr = 0
 P = [glm.ortho(-1,1,-1,1,-1,10), glm.perspective(glm.radians(90.), 1, .01, 1000)]
 P_index = 0
 
+def prepare_vao_frame():
+    # prepare vertex data (in main memory)
+    vertices = glm.array(glm.float32,
+        # position        # color
+         0.0, 0.0, 0.0,  1.0, 0.0, 0.0, # x-axis start
+         1.0, 0.0, 0.0,  1.0, 0.0, 0.0, # x-axis end 
+         0.0, 0.0, 0.0,  0.0, 1.0, 0.0, # y-axis start
+         0.0, 1.0, 0.0,  0.0, 1.0, 0.0, # y-axis end 
+         0.0, 0.0, 0.0,  0.0, 0.0, 1.0, # z-axis start
+         0.0, 0.0, 1.0,  0.0, 0.0, 1.0, # z-axis end 
+    )
+
+    # create and activate VAO (vertex array object)
+    VAO = glGenVertexArrays(1)  # create a vertex array object ID and store it to VAO variable
+    glBindVertexArray(VAO)      # activate VAO
+
+    # create and activate VBO (vertex buffer object)
+    VBO = glGenBuffers(1)   # create a buffer object ID and store it to VBO variable
+    glBindBuffer(GL_ARRAY_BUFFER, VBO)  # activate VBO as a vertex buffer object
+
+    # copy vertex data to VBO
+    glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices.ptr, GL_STATIC_DRAW) # allocate GPU memory for and copy vertex data to the currently bound vertex buffer
+
+    # configure vertex positions
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * glm.sizeof(glm.float32), None)
+    glEnableVertexAttribArray(0)
+
+    # configure vertex colors
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * glm.sizeof(glm.float32), ctypes.c_void_p(3*glm.sizeof(glm.float32)))
+    glEnableVertexAttribArray(1)
+
+    return VAO
+
 def key_callback(window, key, scancode, action, mods):
     global g_cam_ang, g_cam_height, g_translate, right_button_state, P_index
     if key==GLFW_KEY_ESCAPE and action==GLFW_PRESS:
@@ -90,7 +123,7 @@ def cursor_callback(window, xpos, ypos):
     diff_cursor = [xpos-current_cursor[0], current_cursor[1]-ypos]
     
     if left_button_state:
-        g_cam_ang += diff_cursor[0]*.01
+        # g_cam_ang += diff_cursor[0]*.01
         g_cam_ang2 += diff_cursor[1]*.01
     if right_button_state:
         dr = diff_cursor[0]*.001
@@ -166,6 +199,7 @@ def main():
     # prepare vaos
     vao_ground_lines = prepare_vao_ground_lines()
     vao_triangle = prepare_vao_triangle()
+    vao_frame = prepare_vao_frame()
 
     # loop until the user closes the window
     while not glfwWindowShouldClose(window):
@@ -178,11 +212,14 @@ def main():
         glUseProgram(shader_program)
 
         # projection matrix
+        up_vec = glm.vec3(0, 1, 0)
+        if (np.sin(g_cam_ang2) < 0):
+            up_vec = glm.vec3(0, -1, 0)
         
-
+        print("angles: ", g_cam_ang, g_cam_ang2)
         # view matrix
         V = glm.lookAt(glm.vec3(.1*np.sin(g_cam_ang)*np.sin(g_cam_ang2),.1*np.cos(g_cam_ang2),.1*np.cos(g_cam_ang)*np.sin(g_cam_ang2))+g_pan
-                       , glm.vec3(0,0,0)+g_pan, glm.vec3(0,1,0))*glm.scale(glm.mat4(), glm.vec3(1., 1., 1.)*g_zoom)
+                       , glm.vec3(0,0,0)+g_pan, up_vec)*glm.scale(glm.mat4(), glm.vec3(1., 1., 1.)*g_zoom)
         
         # current frame: P*V*I (now this is the world frame)
         I = glm.mat4()
@@ -194,6 +231,9 @@ def main():
         # draw lines in xz plane
         glBindVertexArray(vao_ground_lines)
         glDrawArrays(GL_LINES, 0, num_of_lines*8+4)
+        
+        glBindVertexArray(vao_frame)
+        glDrawArrays(GL_LINES, 0, 6)
         
         
         

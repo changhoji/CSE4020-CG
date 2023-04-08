@@ -123,7 +123,7 @@ def cursor_callback(window, xpos, ypos):
     diff_cursor = [xpos-current_cursor[0], current_cursor[1]-ypos]
     
     if left_button_state:
-        # g_cam_ang += diff_cursor[0]*.01
+        g_cam_ang += diff_cursor[0]*.01
         g_cam_ang2 += diff_cursor[1]*.01
     if right_button_state:
         dr = diff_cursor[0]*.001

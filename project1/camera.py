@@ -38,7 +38,7 @@ class Camera:
 
     def get_view_matrix(self):
         return glm.lookAt(
-            (self.get_orbit() + self.pan)*self.distance,
+            self.get_orbit()*self.distance + self.pan,
             self.pan,
             glm.vec3(0,1,0) if np.cos(self.elevation) < 0 else glm.vec3(0,-1,0)
         )

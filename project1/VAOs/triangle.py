@@ -6,8 +6,8 @@ def prepare_vao_triangle():
     vertices = glm.array(glm.float32,
         # position        # color
          0.0, 0.0, 0.0,  1.0, 0.0, 0.0, # v0
-         0.5, 0.0, 0.0,  0.0, 1.0, 0.0, # v1
-         0.0, 0.5, 0.0,  0.0, 0.0, 1.0, # v2
+         1., 0.0, 0.0,  0.0, 1.0, 0.0, # v1
+         0.0, 1., 0.0,  0.0, 0.0, 1.0, # v2
     )
 
     # create and activate VAO (vertex array object)

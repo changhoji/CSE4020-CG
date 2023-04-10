@@ -8,19 +8,29 @@ from shader import load_shaders
 from callbacks import *
 from VAOs.ground_lines import *
 from VAOs.triangle import *
+from VAOs.cube import *
 
 from camera import camera
+
+def draw_cube_array(vao, MVP, MVP_loc):
+    glBindVertexArray(vao)
+    for i in range(5):
+        for j in range(5):
+            for k in range(5):
+                MVP_cube = MVP * glm.translate(glm.vec3(1*i, 1*j, 1*k)) * glm.scale(glm.vec3(.5,.5,.5))
+                glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP_cube))
+                glDrawArrays(GL_TRIANGLES, 0, 36)
 
 def prepare_vao_frame():
     # prepare vertex data (in main memory)
     vertices = glm.array(glm.float32,
         # position        # color
          0.0, 0.0, 0.0,  1.0, 0.0, 0.0, # x-axis start
-         1.0, 0.0, 0.0,  1.0, 0.0, 0.0, # x-axis end 
+         10.0, 0.0, 0.0,  1.0, 0.0, 0.0, # x-axis end 
          0.0, 0.0, 0.0,  0.0, 1.0, 0.0, # y-axis start
-         0.0, 1.0, 0.0,  0.0, 1.0, 0.0, # y-axis end 
+         0.0, 10.0, 0.0,  0.0, 1.0, 0.0, # y-axis end 
          0.0, 0.0, 0.0,  0.0, 0.0, 1.0, # z-axis start
-         0.0, 0.0, 1.0,  0.0, 0.0, 1.0, # z-axis end 
+         0.0, 0.0, 10.0,  0.0, 0.0, 1.0, # z-axis end 
     )
 
     # create and activate VAO (vertex array object)
@@ -101,6 +111,8 @@ def main():
     glfwSetScrollCallback(window, scroll_callback)
     glfwSetCursorPosCallback(window, cursor_callback)
     glfwSetMouseButtonCallback(window, mouse_button_callback)
+    
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback)
 
     # load shaders
     shader_program = load_shaders(g_vertex_shader_src, g_fragment_shader_src)
@@ -112,7 +124,11 @@ def main():
     vao_ground_lines = prepare_vao_ground_lines()
     vao_triangle = prepare_vao_triangle()
     vao_frame = prepare_vao_frame()
+    vao_cube = prepare_vao_cube()
 
+    # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+    # glViewport(100,100, 200,200)
+    
     # loop until the user closes the window
     while not glfwWindowShouldClose(window):
         # render
@@ -157,6 +173,8 @@ def main():
         
         glBindVertexArray(vao_triangle)
         glDrawArrays(GL_TRIANGLES, 0, 3)
+        
+        # draw_cube_array(vao_cube, MVP, MVP_loc)
         
         # swap front and back buffers
         glfwSwapBuffers(window)

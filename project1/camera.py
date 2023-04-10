@@ -3,11 +3,11 @@ import numpy as np
 
 class Camera:
     def __init__(self):
-        self.distance  = 1.
-        self.azimuth   = glm.degrees(45.)
+        self.distance  = 10.
+        self.azimuth   = glm.degrees(30.)
         self.elevation = glm.degrees(45.)
         self.pan = glm.vec3(0.,0.,0.)  
-        self.perspective = True  
+        self.perspective = True
                   
     def get_orbit(self):
         return glm.vec3(
@@ -45,8 +45,8 @@ class Camera:
     
     def get_projection_matrix(self):
         return (
-            glm.ortho(-self.distance, self.distance, -self.distance, self.distance, -1000, 1000) if not self.perspective 
-            else glm.perspective(glm.radians(90.), 1, .01, 1000)
+            glm.ortho(-self.distance, self.distance, -self.distance, self.distance, -self.distance*5, self.distance*5) if not self.perspective 
+            else glm.perspective(glm.radians(45.), 1, .01, 1000)
             )
         
 

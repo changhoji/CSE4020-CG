@@ -1,3 +1,4 @@
+from OpenGL.GL import *
 from glfw.GLFW import *
 import glm
 import numpy as np
@@ -50,3 +51,6 @@ def cursor_callback(window, xpos, ypos):
         camera.change_pan(diff_cursor[0], diff_cursor[1])
         
     current_cursor = [xpos, ypos]
+    
+def framebuffer_size_callback(window, width, height):
+    glViewport(0, 0, width, height)

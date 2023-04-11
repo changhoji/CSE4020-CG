@@ -17,7 +17,7 @@ class Camera:
         )
         
     def increase_distance(self):
-        self.distance *= 1.1
+        self.distance = min(100, self.distance*1.1)
     def decrase_distance(self):
         self.distance = max(.001, self.distance*.9)
         
@@ -35,6 +35,8 @@ class Camera:
         
     def toggle_projection(self):
         self.orthogonal = not self.orthogonal
+    def isOrthogonal(self):
+        return self.orthogonal
 
     def get_view_matrix(self):
         return glm.lookAt(
@@ -45,7 +47,7 @@ class Camera:
     
     def get_projection_matrix(self):
         return (
-            glm.ortho(-self.distance*.4, self.distance*.4, -self.distance*.4, self.distance*.4, -self.distance*5, self.distance*5) if self.orthogonal
+            glm.ortho(-5, 5, -5, 5, -self.distance*5, self.distance*5) if self.orthogonal
             else glm.perspective(glm.radians(45.), 1, .01, 1000)
             )
         

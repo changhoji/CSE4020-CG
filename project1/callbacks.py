@@ -20,6 +20,8 @@ def key_callback(window, key, scancode, action, mods):
         
                 
 def scroll_callback(window, xoffset, yoffset):
+    if camera.isOrthogonal():
+        return
     if yoffset < 0:
         camera.increase_distance()
     if yoffset > 0:

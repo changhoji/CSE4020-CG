@@ -7,7 +7,7 @@ class Camera:
         self.azimuth   = glm.degrees(30.)
         self.elevation = glm.degrees(45.)
         self.pan = glm.vec3(0.,0.,0.)  
-        self.perspective = True
+        self.orthogonal = False
                   
     def get_orbit(self):
         return glm.vec3(
@@ -22,19 +22,19 @@ class Camera:
         self.distance = max(.001, self.distance*.9)
         
     def change_azimuth(self, diff):
-        self.azimuth += diff*glm.degrees(.0005)
+        self.azimuth += diff*glm.degrees(.0001)
     def change_elevation(self, diff):
-        self.elevation += diff*glm.degrees(.0005)
+        self.elevation += diff*glm.degrees(.00007)
         
     def change_pan(self, dxz, dy):
         self.pan += glm.vec3(
-            dxz*np.sin(self.azimuth)*.01,
-            dy*.01,
-            -dxz*np.cos(self.azimuth)*.01
-        )
+            dxz*np.sin(self.azimuth)*.0011,
+            -dy*.0009,
+            -dxz*np.cos(self.azimuth)*.0011
+        )*self.distance
         
     def toggle_projection(self):
-        self.perspective = not self.perspective
+        self.orthogonal = not self.orthogonal
 
     def get_view_matrix(self):
         return glm.lookAt(
@@ -45,7 +45,7 @@ class Camera:
     
     def get_projection_matrix(self):
         return (
-            glm.ortho(-self.distance, self.distance, -self.distance, self.distance, -self.distance*5, self.distance*5) if not self.perspective 
+            glm.ortho(-self.distance*.4, self.distance*.4, -self.distance*.4, self.distance*.4, -self.distance*5, self.distance*5) if self.orthogonal
             else glm.perspective(glm.radians(45.), 1, .01, 1000)
             )
         

@@ -8,36 +8,44 @@ class Camera:
         self.elevation = glm.degrees(45.)
         self.pan = glm.vec3(0.,0.,0.)  
         self.orthogonal = False
-                  
+    
+    # get camera position except for pos that panned  
     def get_orbit(self):
         return glm.vec3(
             np.cos(self.azimuth)*np.cos(self.elevation),
             np.sin(self.elevation),
             np.sin(self.azimuth)*np.cos(self.elevation)
         )
-        
+    
+    # zoom in and out
     def increase_distance(self):
         self.distance = min(100, self.distance*1.1)
     def decrase_distance(self):
         self.distance = max(.001, self.distance*.9)
-        
+    
+    # orbit
     def change_azimuth(self, diff):
         self.azimuth += diff*glm.degrees(.0001)
     def change_elevation(self, diff):
         self.elevation += diff*glm.degrees(.00007)
         
+    # pan
     def change_pan(self, dxz, dy):
         self.pan += glm.vec3(
             dxz*np.sin(self.azimuth)*.0011,
             -dy*.0009,
             -dxz*np.cos(self.azimuth)*.0011
         )*self.distance
-        
+    
+    # when press 'v' key
     def toggle_projection(self):
         self.orthogonal = not self.orthogonal
+        
+    # getInstance
     def isOrthogonal(self):
         return self.orthogonal
 
+    # get V matrix of MVP
     def get_view_matrix(self):
         return glm.lookAt(
             self.get_orbit()*self.distance + self.pan,
@@ -45,6 +53,7 @@ class Camera:
             glm.vec3(0,1,0) if np.cos(self.elevation) < 0 else glm.vec3(0,-1,0)
         )
     
+    # get P matrix of MVP
     def get_projection_matrix(self):
         return (
             glm.ortho(-5, 5, -5, 5, -self.distance*5, self.distance*5) if self.orthogonal

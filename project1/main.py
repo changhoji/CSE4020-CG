@@ -4,56 +4,16 @@ import glm
 import ctypes
 import numpy as np
 
-from shader import load_shaders
+from vaos import *
 from callbacks import *
-from VAOs.ground_lines import *
-from VAOs.triangle import *
-from VAOs.cube import *
+from shader import load_shaders
 
 from camera import camera
 
-def draw_cube_array(vao, MVP, MVP_loc):
-    glBindVertexArray(vao)
-    for i in range(5):
-        for j in range(5):
-            for k in range(5):
-                MVP_cube = MVP * glm.translate(glm.vec3(1*i, 1*j, 1*k)) * glm.scale(glm.vec3(.5,.5,.5))
-                glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP_cube))
-                glDrawArrays(GL_TRIANGLES, 0, 36)
 
-def prepare_vao_frame():
-    # prepare vertex data (in main memory)
-    vertices = glm.array(glm.float32,
-        # position        # color
-         0.0, 0.0, 0.0,  1.0, 0.0, 0.0, # x-axis start
-         10.0, 0.0, 0.0,  1.0, 0.0, 0.0, # x-axis end 
-         0.0, 0.0, 0.0,  0.0, 1.0, 0.0, # y-axis start
-         0.0, 10.0, 0.0,  0.0, 1.0, 0.0, # y-axis end 
-         0.0, 0.0, 0.0,  0.0, 0.0, 1.0, # z-axis start
-         0.0, 0.0, 10.0,  0.0, 0.0, 1.0, # z-axis end 
-    )
 
-    # create and activate VAO (vertex array object)
-    VAO = glGenVertexArrays(1)  # create a vertex array object ID and store it to VAO variable
-    glBindVertexArray(VAO)      # activate VAO
 
-    # create and activate VBO (vertex buffer object)
-    VBO = glGenBuffers(1)   # create a buffer object ID and store it to VBO variable
-    glBindBuffer(GL_ARRAY_BUFFER, VBO)  # activate VBO as a vertex buffer object
-
-    # copy vertex data to VBO
-    glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices.ptr, GL_STATIC_DRAW) # allocate GPU memory for and copy vertex data to the currently bound vertex buffer
-
-    # configure vertex positions
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * glm.sizeof(glm.float32), None)
-    glEnableVertexAttribArray(0)
-
-    # configure vertex colors
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * glm.sizeof(glm.float32), ctypes.c_void_p(3*glm.sizeof(glm.float32)))
-    glEnableVertexAttribArray(1)
-
-    return VAO
-
+# vertex shader source code
 g_vertex_shader_src = '''
 #version 330 core
 
@@ -75,6 +35,7 @@ void main()
 }
 '''
 
+# fragment shader source code
 g_fragment_shader_src = '''
 #version 330 core
 
@@ -120,35 +81,28 @@ def main():
     # get uniform locations
     MVP_loc = glGetUniformLocation(shader_program, 'MVP')
     
+    num_of_lines = 20
     # prepare vaos
-    vao_ground_lines = prepare_vao_ground_lines()
+    vao_ground_lines = prepare_vao_ground_lines(num_of_lines)
     vao_triangle = prepare_vao_triangle()
     vao_frame = prepare_vao_frame()
     vao_cube = prepare_vao_cube()
-
-    # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-    # glViewport(100,100, 200,200)
     
     # loop until the user closes the window
-    while not glfwWindowShouldClose(window):
-        # render
-        
-        # enable depth test (we'll see details later)
+    while not glfwWindowShouldClose(window):     
+        # enable depth test
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glEnable(GL_DEPTH_TEST)
 
         glUseProgram(shader_program)
 
+        # -- draw in world frame --
+
         # projection matrix
         P = camera.get_projection_matrix()
-        
-        
         # view matrix
         V = camera.get_view_matrix()
-        # V = glm.lookAt((glm.vec3(.1*np.sin(g_cam_ang)*np.sin(g_cam_ang2),.1*np.cos(g_cam_ang2),.1*np.cos(g_cam_ang)*np.sin(g_cam_ang2))+g_pan)*camera.distance
-        #                , glm.vec3(0,0,0)+g_pan, up_vec)
-        
-        # current frame: P*V*I (now this is the world frame)
+        # M in world frame
         I = glm.mat4()
         
         # get MVP matrix
@@ -162,19 +116,24 @@ def main():
         glBindVertexArray(vao_frame)
         glDrawArrays(GL_LINES, 0, 6)
         
-        t = glfwGetTime()
+        # -- draw in world frame --
         
-        # rotation
-        th = np.radians(t*90)
+        
+        # -- draw objects --
+        
+        # get M matrix
+        th = np.radians(glfwGetTime()*90)
         R = glm.rotate(th, glm.vec3(0,0,1))
-        MVP = P*V*R
         
+        MVP = P*V*R
         glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
         
         glBindVertexArray(vao_triangle)
         glDrawArrays(GL_TRIANGLES, 0, 3)
         
         # draw_cube_array(vao_cube, MVP, MVP_loc)
+        
+        # -- draw object --
         
         # swap front and back buffers
         glfwSwapBuffers(window)

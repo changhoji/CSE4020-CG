@@ -10,9 +10,6 @@ from shader import load_shaders
 
 from camera import camera
 
-
-
-
 # vertex shader source code
 g_vertex_shader_src = '''
 #version 330 core
@@ -49,8 +46,6 @@ void main()
 }
 '''
 
-
-
 def main():
     # initialize glfw
     if not glfwInit():
@@ -72,20 +67,16 @@ def main():
     glfwSetScrollCallback(window, scroll_callback)
     glfwSetCursorPosCallback(window, cursor_callback)
     glfwSetMouseButtonCallback(window, mouse_button_callback)
-    
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback)
 
-    # load shaders
+    # load shaders.
     shader_program = load_shaders(g_vertex_shader_src, g_fragment_shader_src)
 
     # get uniform locations
     MVP_loc = glGetUniformLocation(shader_program, 'MVP')
     
-    num_of_lines = 20
     # prepare vaos
-    vao_ground_lines = prepare_vao_ground_lines(num_of_lines)
-    vao_triangle = prepare_vao_triangle()
-    vao_frame = prepare_vao_frame()
+    num_of_lines = 100
+    vao_grid = prepare_vao_grid(num_of_lines)
     
     # loop until the user closes the window
     while not glfwWindowShouldClose(window):     
@@ -109,30 +100,10 @@ def main():
         glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
 
         # draw lines in xz plane
-        glBindVertexArray(vao_ground_lines)
+        glBindVertexArray(vao_grid)
         glDrawArrays(GL_LINES, 0, num_of_lines*8+4)
         
-        glBindVertexArray(vao_frame)
-        glDrawArrays(GL_LINES, 0, 6)
-        
-        # -- draw in world frame --
-        
-        
         # -- draw objects --
-        
-        # get M matrix
-        th = np.radians(glfwGetTime()*90)
-        R = glm.rotate(th, glm.vec3(0,0,1))
-        
-        MVP = P*V*R
-        glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
-        
-        glBindVertexArray(vao_triangle)
-        glDrawArrays(GL_TRIANGLES, 0, 3)
-        
-        # draw_cube_array(vao_cube, MVP, MVP_loc)
-        
-        # -- draw object --
         
         # swap front and back buffers
         glfwSwapBuffers(window)

@@ -1,5 +1,6 @@
 from OpenGL.GL import *
 from glfw.GLFW import *
+import glm
 
 from camera import camera
 
@@ -7,6 +8,7 @@ left_button_state = 0
 right_button_state = 0
 current_cursor = [0, 0]
 diff_cursor = [0, 0]
+g_P = glm.mat4()
 
 # glfw key callback function
 def key_callback(window, key, scancode, action, mods):
@@ -58,7 +60,4 @@ def cursor_callback(window, xpos, ypos):
     
     # update current cursor position
     current_cursor = [xpos, ypos]
-
-
-def framebuffer_size_callback(window, width, height):
-    glViewport(0, 0, width, height)
+    

@@ -30,13 +30,15 @@ class Camera:
         self.elevation += diff*glm.degrees(.00007)
         
     # pan
-    def change_pan(self, dxz, dy):
-        self.pan += glm.vec3(
-            dxz*np.sin(self.azimuth)*.0011,
-            -dy*.0009,
-            -dxz*np.cos(self.azimuth)*.0011
-        )*self.distance
-    
+    def change_pan(self, dx, dy):
+        # get u and v vector of camera
+        M = glm.transpose(self.get_view_matrix())
+        u = M[0].xyz
+        v = M[1].xyz
+        
+        # pan camera
+        self.pan += -(u*dx+v*dy)*.0007*self.distance
+
     # when press 'v' key
     def toggle_projection(self):
         self.orthogonal = not self.orthogonal
@@ -59,6 +61,6 @@ class Camera:
             glm.ortho(-self.distance*.45, self.distance*.45, -self.distance*.45, self.distance*.45, -self.distance*5, self.distance*5) if self.orthogonal
             else glm.perspective(glm.radians(45.), 1, .01, 1000)
             )
-        
 
+# make global camera
 camera = Camera()

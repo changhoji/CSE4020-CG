@@ -19,11 +19,7 @@ def key_callback(window, key, scancode, action, mods):
         
 # glfw scroll callback function
 def scroll_callback(window, xoffset, yoffset):
-    # in orthogonal, don't edit distance value
-    if camera.isOrthogonal():
-        return
-    
-    # in perspective, edit distance value for zoomming in and out
+    # edit distance value for zoomming in and out
     if yoffset < 0:
         camera.increase_distance()
     if yoffset > 0:
@@ -48,14 +44,19 @@ def mouse_button_callback(window, button, action, mod):
 def cursor_callback(window, xpos, ypos):
     global current_cursor, diff_cursor
     
+    # get difference of cursor position
     diff_cursor = [xpos-current_cursor[0], current_cursor[1]-ypos]
     
+    # do orbit
     if left_button_state:
         camera.change_azimuth(diff_cursor[0])
         camera.change_elevation(diff_cursor[1])
+    
+    #do pan
     if right_button_state:
         camera.change_pan(diff_cursor[0], diff_cursor[1])
-        
+    
+    # update current cursor position
     current_cursor = [xpos, ypos]
 
 

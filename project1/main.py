@@ -86,7 +86,6 @@ def main():
     vao_ground_lines = prepare_vao_ground_lines(num_of_lines)
     vao_triangle = prepare_vao_triangle()
     vao_frame = prepare_vao_frame()
-    vao_cube = prepare_vao_cube()
     
     # loop until the user closes the window
     while not glfwWindowShouldClose(window):     

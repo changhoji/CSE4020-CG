@@ -21,7 +21,7 @@ class Camera:
     def increase_distance(self):
         self.distance = min(100, self.distance*1.1)
     def decrase_distance(self):
-        self.distance = max(.001, self.distance*.9)
+        self.distance = max(.01, self.distance*.9)
     
     # orbit
     def change_azimuth(self, diff):
@@ -56,7 +56,7 @@ class Camera:
     # get P matrix of MVP
     def get_projection_matrix(self):
         return (
-            glm.ortho(-5, 5, -5, 5, -self.distance*5, self.distance*5) if self.orthogonal
+            glm.ortho(-self.distance*.45, self.distance*.45, -self.distance*.45, self.distance*.45, -self.distance*5, self.distance*5) if self.orthogonal
             else glm.perspective(glm.radians(45.), 1, .01, 1000)
             )
         

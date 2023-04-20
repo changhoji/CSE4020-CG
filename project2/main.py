@@ -67,6 +67,7 @@ def main():
     glfwSetScrollCallback(window, scroll_callback)
     glfwSetCursorPosCallback(window, cursor_callback)
     glfwSetMouseButtonCallback(window, mouse_button_callback)
+    glfwSetDropCallback(window, drop_callback)
 
     # load shaders.
     shader_program = load_shaders(g_vertex_shader_src, g_fragment_shader_src)

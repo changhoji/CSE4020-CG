@@ -66,17 +66,15 @@ def cursor_callback(window, xpos, ypos):
 def drop_callback(window, paths):
     path = paths[0]
     
-    positions, normals, faces = load_obj_file(path)
-    print("after load file")
-    object = Object(positions, normals, faces)
-                    
-    print("Obj file name: " + os.path.basename(path))
-    
+    load_obj_file(path)
+                        
     
 def load_obj_file(path):
     if os.path.splitext(path)[1] != ".obj":
         print("can open only obj file")
         return
+    
+    print("path: ", path)
     
     positions = glm.array(glm.vec3(0, 0, 0))
     normals = glm.array(glm.vec3(0, 0, 0))
@@ -111,5 +109,6 @@ def load_obj_file(path):
                     temp["normal"] = 0 # temp
                     face.append(temp)
                 faces.append(face)
+                
+    Object(positions, normals, faces)
         
-    return positions, normals, faces    

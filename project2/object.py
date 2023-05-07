@@ -16,7 +16,7 @@ class ObjectManager:
 
 class Object:
     def __init__(self, positions, normals, faces):
-        self.positions = positions
+        self.positions = positions 
         self.normals = normals
         self.faces = faces
         object_manager.set_object(self)
@@ -25,7 +25,9 @@ class Object:
         # temp vec3
         vertices = glm.array(glm.array(glm.vec3(0, 0, 0)))
         
-        for face in self.faces:
+        for index, face in enumerate(self.faces):
+            if index%1000 == 0:
+                print("f:"+str(index+1)+"/"+str(len(self.faces)))
             for i in range(1, len(face) - 2 + 1, 1):
                 vertices = vertices.concat(glm.array(self.positions[face[0]["position"]]))
                 vertices = vertices.concat(glm.array(self.normals[face[0]["normal"]]))
@@ -36,7 +38,7 @@ class Object:
                     vertices = vertices.concat(glm.array(self.normals[normal_index]))
                     
         # delete temp vec3
-        del vertices[0]       
+        del vertices[0] 
         
         VAO = glGenVertexArrays(1)
         glBindVertexArray(VAO)

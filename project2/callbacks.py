@@ -1,8 +1,10 @@
 from OpenGL.GL import *
 from glfw.GLFW import *
 import glm
+import os
 
 from camera import camera
+from object import *
 
 left_button_state = 0
 right_button_state = 0
@@ -61,6 +63,53 @@ def cursor_callback(window, xpos, ypos):
     # update current cursor position
     current_cursor = [xpos, ypos]
     
-def drop_callback(window, count, paths):
-    for path in paths:
-        print(path)
+def drop_callback(window, paths):
+    path = paths[0]
+    
+    positions, normals, faces = load_obj_file(path)
+    print("after load file")
+    object = Object(positions, normals, faces)
+                    
+    print("Obj file name: " + os.path.basename(path))
+    
+    
+def load_obj_file(path):
+    if os.path.splitext(path)[1] != ".obj":
+        print("can open only obj file")
+        return
+    
+    positions = glm.array(glm.vec3(0, 0, 0))
+    normals = glm.array(glm.vec3(0, 0, 0))
+    faces = []
+    
+    with open(path, "r") as file:
+        for line in file:
+            args = line.split()
+            
+            # comment
+            if len(args) == 0:
+                continue
+            
+            if args[0] == "#":
+                continue
+            
+            if args[0] == "v":
+                pos = glm.vec3(float(args[1]), float(args[2]), float(args[3]))
+                positions = positions.concat(glm.array(pos))
+                
+            elif args[0] == "vn":
+                normal = glm.vec3(float(args[1]), float(args[2]), float(args[3]))
+                normals = normals.concat(glm.array(normal))
+                
+            elif args[0] == "f":
+                face = []
+                for arg in args[1:]: # arg = 1//2
+                    temp = {}
+                    toks = arg.split("/") # toks = ['1', '', '2']
+                    # print("toks: ", toks)
+                    temp["position"] = int(toks[0])
+                    temp["normal"] = 0 # temp
+                    face.append(temp)
+                faces.append(face)
+        
+    return positions, normals, faces    

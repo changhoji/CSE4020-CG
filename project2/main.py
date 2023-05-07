@@ -9,6 +9,7 @@ from callbacks import *
 from shader import load_shaders
 
 from camera import camera
+from object import object_manager
 
 # vertex shader source code
 g_vertex_shader_src = '''
@@ -46,6 +47,27 @@ void main()
 }
 '''
 
+g_vertex_shader_src_mesh = '''
+#version 330 core
+
+layout (location = 0) in vec3 vin_pos; 
+layout (location = 1) in vec3 vin_normal; 
+
+out vec4 vout_color;
+
+uniform mat4 mesh_MVP;
+
+void main()
+{
+    // 3D points in homogeneous coordinates
+    vec4 p3D_in_hcoord = vec4(vin_pos.xyz, 1.0);
+
+    gl_Position = mesh_MVP * p3D_in_hcoord;
+
+    vout_color = vec4(.7, .7, .7, 1.);
+}
+'''
+
 def main():
     # initialize glfw
     if not glfwInit():
@@ -71,9 +93,11 @@ def main():
 
     # load shaders.
     shader_program = load_shaders(g_vertex_shader_src, g_fragment_shader_src)
+    shader_for_mesh = load_shaders(g_vertex_shader_src_mesh, g_fragment_shader_src)
 
     # get uniform locations
     MVP_loc = glGetUniformLocation(shader_program, 'MVP')
+    mesh_MVP_loc = glGetUniformLocation(shader_for_mesh, 'mesh_MVP')
     
     # prepare vaos
     num_of_lines = 100
@@ -105,6 +129,12 @@ def main():
         glDrawArrays(GL_LINES, 0, num_of_lines*8+4)
         
         # -- draw objects --
+        glUseProgram(shader_for_mesh)
+        glUniformMatrix4fv(mesh_MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
+        
+        if object_manager.exist == True:
+            glBindVertexArray(object_manager.vao)
+            glDrawArrays(GL_TRIANGLES, 0, object_manager.cnt)
         
         # swap front and back buffers
         glfwSwapBuffers(window)

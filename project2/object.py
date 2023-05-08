@@ -1,5 +1,6 @@
 from OpenGL.GL import *
 from glfw.GLFW import *
+import numpy as np
 import glm
 
 class ObjectManager:
@@ -23,22 +24,23 @@ class Object:
         
     def prepare_vao(self):
         # temp vec3
-        vertices = glm.array(glm.array(glm.vec3(0, 0, 0)))
+        vertices = []
         
         for index, face in enumerate(self.faces):
-            if index%1000 == 0:
-                print("f:"+str(index+1)+"/"+str(len(self.faces)))
+            # if index%1000 == 0:
+            #     print("f:"+str(index+1)+"/"+str(len(self.faces)))
             for i in range(1, len(face) - 2 + 1, 1):
-                vertices = vertices.concat(glm.array(self.positions[face[0]["position"]]))
-                vertices = vertices.concat(glm.array(self.normals[face[0]["normal"]]))
+                vertices.append(self.positions[face[0]["position"]])
+                vertices.append(self.normals[face[0]["normal"]])
                 for j in range(2):
                     pos_index = face[i+j]["position"]
                     normal_index = face[i+j]["normal"]
-                    vertices = vertices.concat(glm.array(self.positions[pos_index]))
-                    vertices = vertices.concat(glm.array(self.normals[normal_index]))
+                    vertices.append(self.positions[pos_index])
+                    vertices.append(self.normals[normal_index])
                     
         # delete temp vec3
-        del vertices[0] 
+        
+        vertices = glm.array(np.array(vertices))
         
         VAO = glGenVertexArrays(1)
         glBindVertexArray(VAO)
@@ -51,7 +53,7 @@ class Object:
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*glm.sizeof(glm.float32), None)
         glEnableVertexAttribArray(0)
         
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*glm.sizeof(glm.float32), ctypes.c_void_p(3*glm.sizeof(glm.float32)))
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 6*glm.sizeof(glm.float32), ctypes.c_void_p(3*glm.sizeof(glm.float32)))
         glEnableVertexAttribArray(1)
         
         return VAO, int(len(vertices)/2)

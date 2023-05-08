@@ -19,9 +19,9 @@ class Camera:
     
     # zoom in and out
     def increase_distance(self):
-        self.distance = min(100, self.distance*1.1)
+        self.distance = min(500, self.distance*1.05)
     def decrase_distance(self):
-        self.distance = max(.01, self.distance*.9)
+        self.distance = max(.01, self.distance*.95)
     
     # orbit
     def change_azimuth(self, diff):
@@ -61,6 +61,10 @@ class Camera:
             glm.ortho(-self.distance*.45, self.distance*.45, -self.distance*.45, self.distance*.45, -self.distance*5, self.distance*5) if self.orthogonal
             else glm.perspective(glm.radians(45.), 1, .01, 1000)
             )
+    
+    def get_eye_vector(self):
+        return self.get_orbit()*self.distance + self.pan
+        
 
 # make global camera
 camera = Camera()

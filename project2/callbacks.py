@@ -76,8 +76,8 @@ def load_obj_file(path):
     
     print("path: ", path)
     
-    positions = glm.array(glm.vec3(0, 0, 0))
-    normals = glm.array(glm.vec3(0, 0, 0))
+    positions = []
+    normals = []
     faces = []
     
     with open(path, "r") as file:
@@ -92,12 +92,10 @@ def load_obj_file(path):
                 continue
             
             if args[0] == "v":
-                pos = glm.vec3(float(args[1]), float(args[2]), float(args[3]))
-                positions = positions.concat(glm.array(pos))
+                positions.append(glm.vec3(float(args[1]), float(args[2]), float(args[3])))
                 
             elif args[0] == "vn":
-                normal = glm.vec3(float(args[1]), float(args[2]), float(args[3]))
-                normals = normals.concat(glm.array(normal))
+                normals.append(glm.vec3(float(args[1]), float(args[2]), float(args[3])))
                 
             elif args[0] == "f":
                 face = []
@@ -105,10 +103,12 @@ def load_obj_file(path):
                     temp = {}
                     toks = arg.split("/") # toks = ['1', '', '2']
                     # print("toks: ", toks)
-                    temp["position"] = int(toks[0])
-                    temp["normal"] = 0 # temp
+                    temp["position"] = int(toks[0])-1
+                    temp["normal"] = int(toks[2])-1 # normal이 다 0,0,0 이었음
                     face.append(temp)
                 faces.append(face)
-                
+        
+    normals.append(glm.vec3(0., 0., 0.))
+    
     Object(positions, normals, faces)
         

@@ -78,14 +78,15 @@ in vec3 vout_normal;
 out vec4 FragColor;
 
 uniform vec3 view_pos;
+uniform vec3 light_pos;
 
 void main()
 {
     // light and material properties
-    vec3 light_pos = vec3(100, 200, 100);
+    // vec3 light_pos = vec3(100, 100, 100);
     vec3 light_color = vec3(1,1,1);
-    vec3 material_color = vec3(.2,.6,.8);
-    float material_shininess = 32.0;
+    vec3 material_color = vec3(69,30,20)*0.004;
+    float material_shininess = 100.0;
 
     // light components
     vec3 light_ambient = 0.1*light_color;
@@ -152,17 +153,17 @@ def main():
     mesh_MVP_loc = glGetUniformLocation(shader_for_mesh, 'mesh_MVP')
     view_pos_loc = glGetUniformLocation(shader_for_mesh, 'view_pos')
     M_loc = glGetUniformLocation(shader_for_mesh, 'M')
+    light_pos_loc = glGetUniformLocation(shader_for_mesh, 'light_pos')
     
     # prepare vaos
     num_of_lines = 100
     vao_grid = prepare_vao_grid(num_of_lines)
-    vao_cube = prepare_vao_cube()
     
     # loop until the user closes the window
     while not glfwWindowShouldClose(window):     
         # enable depth test
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glClearColor(.5, .5, .5, 1.)
+        # glClearColor(.5, .5, .5, 1.)
         glEnable(GL_DEPTH_TEST)
 
         glUseProgram(shader_program)
@@ -185,14 +186,16 @@ def main():
         glDrawArrays(GL_LINES, 0, num_of_lines*8+4)
         
         # -- draw objects --
-        eye = camera.get_eye_vector()
+        
+        M = glm.translate((0, 1, 0))
+        MVP = P*V*M
+        eye = camera.get_eye_pos()
         glUseProgram(shader_for_mesh)
         glUniformMatrix4fv(mesh_MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
-        glUniformMatrix4fv(M_loc, 1, GL_FALSE, glm.value_ptr(I))
+        glUniformMatrix4fv(M_loc, 1, GL_FALSE, glm.value_ptr(M))
         glUniform3f(view_pos_loc, eye.x, eye.y, eye.z)
-        
-        glBindVertexArray(vao_cube)
-        # glDrawArrays(GL_TRIANGLES, 0, 36) # 이건 교수님 코드 그대
+        eye = camera.get_light_pos(np.radians(10), np.radians(-10))
+        glUniform3f(light_pos_loc, eye.x, eye.y, eye.z)
         
         if object_manager.exist == True:
             glBindVertexArray(object_manager.vao)

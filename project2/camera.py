@@ -62,8 +62,15 @@ class Camera:
             else glm.perspective(glm.radians(45.), 1, .01, 1000)
             )
     
-    def get_eye_vector(self):
+    def get_eye_pos(self):
         return self.get_orbit()*self.distance + self.pan
+    
+    def get_light_pos(self, azimuth, elevation):
+        return glm.vec3(
+            np.cos(self.azimuth+azimuth)*np.cos(self.elevation+elevation),
+            np.sin(self.elevation+elevation),
+            np.sin(self.azimuth+azimuth)*np.cos(self.elevation+elevation)
+        )*self.distance + self.pan
         
 
 # make global camera

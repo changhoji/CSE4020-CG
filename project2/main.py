@@ -3,6 +3,7 @@ from glfw.GLFW import *
 import glm
 import ctypes
 import numpy as np
+import os
 
 from vaos import *
 from callbacks import *
@@ -158,6 +159,10 @@ def main():
     # prepare vaos
     num_of_lines = 100
     vao_grid = prepare_vao_grid(num_of_lines)
+    
+    os.chdir('samples')
+    path = os.path.join('cube-tri.obj')
+    load_obj_file(path)
     
     # loop until the user closes the window
     while not glfwWindowShouldClose(window):     

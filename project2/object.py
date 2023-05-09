@@ -7,13 +7,14 @@ import os
 class ObjectManager:
     def __init__(self):
         self.object = None
-        self.objects = []
+        self.root_object = None
         self.single_mesh = True
         
     def set_object(self, object):
         self.object = object
 
-    
+    def set_root_object(self, object):
+        self.root_object = object
         
 class Object:
     def __init__(self, vertices):
@@ -88,12 +89,13 @@ def load_object(path):
     return Object(vertices)
         
 def prepare_mario_objects():
-        os.chdir('samples/hierarchical')
-        path = os.path.join('hemisphere.obj')
-        load_object(path)
+    os.chdir('hierarchical')
+    path = os.path.join('hemisphere.obj')
+    obj_manager.set_root_object(load_object(path))
     
 def draw_mario_objects():
-    1
+    glBindVertexArray(obj_manager.root_object.vao)
+    glDrawArrays(GL_TRIANGLES, 0, obj_manager.root_object.cnt)
 
 obj_manager = ObjectManager()
 

@@ -164,6 +164,8 @@ def main():
     path = os.path.join('cube-tri.obj')
     obj_manager.object = load_object(path)
     
+    prepare_mario_objects()
+    
     # loop until the user closes the window
     while not glfwWindowShouldClose(window):     
         # enable depth test
@@ -207,7 +209,8 @@ def main():
                 glBindVertexArray(obj_manager.object.vao)
                 glDrawArrays(GL_TRIANGLES, 0, obj_manager.object.cnt)
         else:
-            draw_mario_objects()
+            if obj_manager.root_object is not None:
+                draw_mario_objects()
         
         # swap front and back buffers
         glfwSwapBuffers(window)

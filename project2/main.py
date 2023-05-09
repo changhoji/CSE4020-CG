@@ -10,7 +10,7 @@ from callbacks import *
 from shader import load_shaders
 
 from camera import camera
-from object import object_manager
+from object import obj_manager
 
 # vertex shader source code
 g_vertex_shader_src = '''
@@ -162,7 +162,7 @@ def main():
     
     os.chdir('samples')
     path = os.path.join('cube-tri.obj')
-    load_obj_file(path)
+    obj_manager.object = load_object(path)
     
     # loop until the user closes the window
     while not glfwWindowShouldClose(window):     
@@ -199,12 +199,15 @@ def main():
         glUniformMatrix4fv(mesh_MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
         glUniformMatrix4fv(M_loc, 1, GL_FALSE, glm.value_ptr(M))
         glUniform3f(view_pos_loc, eye.x, eye.y, eye.z)
-        eye = camera.get_light_pos(np.radians(10), np.radians(-10))
+        eye = camera.get_light_pos(np.radians(10), 0)
         glUniform3f(light_pos_loc, eye.x, eye.y, eye.z)
         
-        if object_manager.exist == True:
-            glBindVertexArray(object_manager.vao)
-            glDrawArrays(GL_TRIANGLES, 0, object_manager.cnt)
+        if obj_manager.single_mesh:
+            if obj_manager.object is not None:
+                glBindVertexArray(obj_manager.object.vao)
+                glDrawArrays(GL_TRIANGLES, 0, obj_manager.object.cnt)
+        else:
+            draw_mario_objects()
         
         # swap front and back buffers
         glfwSwapBuffers(window)

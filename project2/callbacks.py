@@ -1,7 +1,6 @@
 from OpenGL.GL import *
 from glfw.GLFW import *
 import glm
-import os
 
 from camera import camera
 from object import *
@@ -65,50 +64,9 @@ def cursor_callback(window, xpos, ypos):
     
 def drop_callback(window, paths):
     path = paths[0]
+    object = load_object(path)
+    obj_manager.single_mesh = True
+    obj_manager.set_object(object)
     
-    load_obj_file(path)
                         
     
-def load_obj_file(path):
-    if os.path.splitext(path)[1] != ".obj":
-        print("can open only obj file")
-        return
-    
-    print("path: ", path)
-    
-    positions = []
-    normals = []
-    faces = []
-    
-    with open(path, "r") as file:
-        for line in file:
-            args = line.split()
-            
-            # comment
-            if len(args) == 0:
-                continue
-            
-            if args[0] == "#":
-                continue
-            
-            if args[0] == "v":
-                positions.append(glm.vec3(float(args[1]), float(args[2]), float(args[3])))
-                
-            elif args[0] == "vn":
-                normals.append(glm.vec3(float(args[1]), float(args[2]), float(args[3])))
-                
-            elif args[0] == "f":
-                face = []
-                for arg in args[1:]: # arg = 1//2
-                    temp = {}
-                    toks = arg.split("/") # toks = ['1', '', '2']
-                    # print("toks: ", toks)
-                    temp["position"] = int(toks[0])-1
-                    temp["normal"] = int(toks[2])-1 # normal이 다 0,0,0 이었음
-                    face.append(temp)
-                faces.append(face)
-        
-    normals.append(glm.vec3(0., 0., 0.))
-    
-    Object(positions, normals, faces)
-        

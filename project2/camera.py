@@ -44,7 +44,7 @@ class Camera:
         self.orthogonal = not self.orthogonal
         
     # getInstance
-    def isOrthogonal(self):
+    def is_orthogonal(self):
         return self.orthogonal
 
     # get V matrix of MVP

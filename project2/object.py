@@ -16,9 +16,85 @@ class ObjectManager:
     def set_root_object(self, object):
         self.root_object = object
         
-class Object:
-    def __init__(self, vertices):
+    def draw_single_object(self, VP, locs):
+        self.object.update_tree_global_transform()
+        self.object.draw_object(VP, locs)
+        
+    def prepare_mario_objects(self):
+        os.chdir('hierarchical')
+        path = os.path.join('hemisphere.obj')
+        
+        ground = Object(load_object_vertices(path), None, glm.translate((0, 2, 0))*glm.scale((8, 5, 8)), glm.vec3(.8, .8, 1))
+        mario = Object(load_object_vertices(os.path.join('mario.obj')), ground, glm.translate((0, 2, 0))*glm.scale((.2, .2, .2)), glm.vec3(.7, .3, .3))
+        coin = Object(load_object_vertices(os.path.join('coin.obj')), ground, glm.translate((0, 3, 0))*glm.scale((.005, .005, .005)), glm.vec3(1, 1, 0))
+        tree = Object(load_object_vertices(os.path.join('tree.obj')), ground, glm.translate((0, 2, 0))*glm.scale((.01, .01, .01)), glm.vec3(.2, 1, .2))
+        
+        self.root_object = ground
+        
+    def draw_mario_objects(self, VP, locs):
+        self.root_object.update_tree_global_transform()
+        self.root_object.draw_objects(VP, locs)        
+        
+class Object:       
+    def __init__(self, vertices, parent=None, shape_transform=glm.mat4(), color=glm.vec3(.7,.7,.7)):
         self.vao, self.cnt = self.prepare_vao(vertices)
+        
+        # hierarchy
+        self.parent = parent
+        self.children = []
+        if parent is not None:
+            parent.children.append(self)
+
+        # transform
+        self.transform = glm.mat4()
+        self.global_transform = glm.mat4()
+
+        # shape
+        self.shape_transform = shape_transform
+        self.color = color
+
+    def set_transform(self, transform):
+        self.transform = transform
+
+    def update_tree_global_transform(self):
+        if self.parent is not None:
+            self.global_transform = self.parent.get_global_transform() * self.transform
+        else:
+            self.global_transform = self.transform
+
+        for child in self.children:
+            child.update_tree_global_transform()
+
+    def get_global_transform(self):
+        return self.global_transform
+    def get_shape_transform(self):
+        return self.shape_transform
+    def get_color(self):
+        return self.color
+
+    def draw_object(self, VP, uniform_locs):
+        M = self.global_transform * self.shape_transform
+        MVP = VP*M
+        
+        color = self.get_color()
+        
+        glBindVertexArray(self.vao)
+        glUniformMatrix4fv(uniform_locs['M_loc'], 1, GL_FALSE, glm.value_ptr(M))
+        glUniformMatrix4fv(uniform_locs['MVP_loc'], 1, GL_FALSE, glm.value_ptr(MVP))
+        glUniform3f(uniform_locs['material_color_loc'], color.r, color.g, color.b)
+        glDrawArrays(GL_TRIANGLES, 0, self.cnt)
+        
+    def draw_objects(self, VP, uniform_locs):
+        MVP = VP*self.global_transform*self.shape_transform
+        color = self.color
+        
+        glBindVertexArray(self.vao)
+        glUniformMatrix4fv(uniform_locs['MVP_loc'], 1, GL_FALSE, glm.value_ptr(MVP))
+        glUniform3f(uniform_locs['material_color_loc'], color.r, color.g, color.b)
+        glDrawArrays(GL_TRIANGLES, 0, self.cnt)
+        
+        for child in self.children:
+            child.draw_objects(VP, uniform_locs)
         
     def prepare_vao(self, vertices):
         VAO = glGenVertexArrays(1)
@@ -37,7 +113,7 @@ class Object:
         
         return VAO, int(len(vertices)/2)
         
-def load_object(path):
+def load_object_vertices(path):
     if os.path.splitext(path)[1] != ".obj":
         print("can open only obj file")
         return
@@ -86,16 +162,6 @@ def load_object(path):
         
     vertices = glm.array(np.array(vertices))
     
-    return Object(vertices)
+    return vertices
         
-def prepare_mario_objects():
-    os.chdir('hierarchical')
-    path = os.path.join('hemisphere.obj')
-    obj_manager.set_root_object(load_object(path))
-    
-def draw_mario_objects():
-    glBindVertexArray(obj_manager.root_object.vao)
-    glDrawArrays(GL_TRIANGLES, 0, obj_manager.root_object.cnt)
-
 obj_manager = ObjectManager()
-

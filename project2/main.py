@@ -80,14 +80,14 @@ out vec4 FragColor;
 
 uniform vec3 view_pos;
 uniform vec3 light_pos;
+uniform vec3 material_color;
 
 void main()
 {
     // light and material properties
     // vec3 light_pos = vec3(100, 100, 100);
     vec3 light_color = vec3(1,1,1);
-    vec3 material_color = vec3(69,30,20)*0.004;
-    float material_shininess = 100.0;
+    float material_shininess = 2.0;
 
     // light components
     vec3 light_ambient = 0.1*light_color;
@@ -155,6 +155,9 @@ def main():
     view_pos_loc = glGetUniformLocation(shader_for_mesh, 'view_pos')
     M_loc = glGetUniformLocation(shader_for_mesh, 'M')
     light_pos_loc = glGetUniformLocation(shader_for_mesh, 'light_pos')
+    material_color_loc = glGetUniformLocation(shader_for_mesh, 'material_color')
+    
+    uniform_locs = {'M_loc':M_loc, 'material_color_loc':material_color_loc, 'MVP_loc':mesh_MVP_loc}
     
     # prepare vaos
     num_of_lines = 100
@@ -162,9 +165,9 @@ def main():
     
     os.chdir('samples')
     path = os.path.join('cube-tri.obj')
-    obj_manager.object = load_object(path)
+    obj_manager.object = Object(load_object_vertices(path))
     
-    prepare_mario_objects()
+    obj_manager.prepare_mario_objects()
     
     # loop until the user closes the window
     while not glfwWindowShouldClose(window):     
@@ -175,6 +178,10 @@ def main():
 
         glUseProgram(shader_program)
 
+        if camera.solid:
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+        else:
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
         # -- draw in world frame --
 
         # projection matrix
@@ -193,24 +200,29 @@ def main():
         glDrawArrays(GL_LINES, 0, num_of_lines*8+4)
         
         # -- draw objects --
-        
-        M = glm.translate((0, 1, 0))
-        MVP = P*V*M
-        eye = camera.get_eye_pos()
         glUseProgram(shader_for_mesh)
-        glUniformMatrix4fv(mesh_MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
-        glUniformMatrix4fv(M_loc, 1, GL_FALSE, glm.value_ptr(M))
-        glUniform3f(view_pos_loc, eye.x, eye.y, eye.z)
-        eye = camera.get_light_pos(np.radians(10), 0)
-        glUniform3f(light_pos_loc, eye.x, eye.y, eye.z)
         
+        # uniform eye pos
+        eye = camera.get_eye_pos()
+        glUniform3f(view_pos_loc, eye.x, eye.y, eye.z)
+        
+        # uniform light pos
+        light = camera.get_light_pos(np.radians(10), np.radians(-30))
+        glUniform3f(light_pos_loc, light.x, light.y, light.z)
+        
+        t = glfwGetTime()
+        
+        # draw objects loaded
         if obj_manager.single_mesh:
             if obj_manager.object is not None:
-                glBindVertexArray(obj_manager.object.vao)
-                glDrawArrays(GL_TRIANGLES, 0, obj_manager.object.cnt)
+                obj_manager.draw_single_object(P*V, uniform_locs)
         else:
             if obj_manager.root_object is not None:
-                draw_mario_objects()
+                # obj_manager.root_object.set_transform(glm.translate((0, np.sin(t), 0)))
+                obj_manager.root_object.children[0].set_transform(glm.rotate(np.cos(5*t), (0, 1, 0))*glm.translate((0, 0, t)))
+                obj_manager.root_object.children[1].set_transform(glm.translate((2, 0, 2))*glm.rotate(10*t, (0, 1, 0))*glm.translate((0, -np.sin(t)*.5, 0)))
+                obj_manager.root_object.children[2].set_transform(glm.translate((-2, 0, -3)))
+                obj_manager.draw_mario_objects(P*V, uniform_locs)
         
         # swap front and back buffers
         glfwSwapBuffers(window)

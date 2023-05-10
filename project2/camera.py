@@ -8,6 +8,7 @@ class Camera:
         self.elevation = glm.degrees(45.)
         self.pan = glm.vec3(0.,0.,0.)  
         self.orthogonal = False
+        self.solid = True
     
     # get camera position except for pos that panned  
     def get_orbit(self):
@@ -71,7 +72,9 @@ class Camera:
             np.sin(self.elevation+elevation),
             np.sin(self.azimuth+azimuth)*np.cos(self.elevation+elevation)
         )*self.distance + self.pan
-        
+    
+    def toggle_wireframe(self):
+        self.solid = not self.solid
 
 # make global camera
 camera = Camera()

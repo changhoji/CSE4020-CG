@@ -21,6 +21,8 @@ def key_callback(window, key, scancode, action, mods):
                 camera.toggle_projection()
             if key == GLFW_KEY_H:
                 obj_manager.single_mesh = not obj_manager.single_mesh
+            if key == GLFW_KEY_Z:
+                camera.toggle_wireframe()
         
 # glfw scroll callback function
 def scroll_callback(window, xoffset, yoffset):
@@ -66,7 +68,7 @@ def cursor_callback(window, xpos, ypos):
     
 def drop_callback(window, paths):
     path = paths[0]
-    object = load_object(path)
+    object = Object(load_object_vertices(path))
     obj_manager.single_mesh = True
     obj_manager.set_object(object)
     

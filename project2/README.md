@@ -17,3 +17,10 @@ camera orbit / pan / zoom 구현
 ### Zoom (확대/축소)
 
 ## Implement
+
+## Trouble Shooting
+
+### light & transformation
+
+-   물체가 transformation 해 상태가 바뀔 때, 빛이 물체를 따라가는 현상
+    -   rotate되면 밝은 부분이 계속 바뀌어야 하지만 물체의 앞부분은 계속 밝고, 뒷부분은 계속 어두움

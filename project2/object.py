@@ -25,7 +25,7 @@ class ObjectManager:
         path = os.path.join('hemisphere.obj')
         
         ground = Object(load_object_vertices(path), None, glm.translate((0, 2, 0))*glm.scale((8, 5, 8)), glm.vec3(.8, .8, 1))
-        mario = Object(load_object_vertices(os.path.join('mario.obj')), ground, glm.translate((0, 2, 0))*glm.scale((.2, .2, .2)), glm.vec3(.7, .3, .3))
+        mario = Object(load_object_vertices(os.path.join('mario.obj')), ground, glm.translate((0, 2, 0))*glm.scale((.2, .2, .2)), glm.vec3(.2, .2, .2))
         coin = Object(load_object_vertices(os.path.join('coin.obj')), ground, glm.translate((0, 3, 0))*glm.scale((.005, .005, .005)), glm.vec3(1, 1, 0))
         tree = Object(load_object_vertices(os.path.join('tree.obj')), ground, glm.translate((0, 2, 0))*glm.scale((.01, .01, .01)), glm.vec3(.2, 1, .2))
         
@@ -85,10 +85,12 @@ class Object:
         glDrawArrays(GL_TRIANGLES, 0, self.cnt)
         
     def draw_objects(self, VP, uniform_locs):
+        M = self.global_transform * self.shape_transform
         MVP = VP*self.global_transform*self.shape_transform
         color = self.color
         
         glBindVertexArray(self.vao)
+        glUniformMatrix4fv(uniform_locs['M_loc'], 1, GL_FALSE, glm.value_ptr(M))
         glUniformMatrix4fv(uniform_locs['MVP_loc'], 1, GL_FALSE, glm.value_ptr(MVP))
         glUniform3f(uniform_locs['material_color_loc'], color.r, color.g, color.b)
         glDrawArrays(GL_TRIANGLES, 0, self.cnt)

@@ -87,7 +87,7 @@ void main()
     // light and material properties
     // vec3 light_pos = vec3(100, 100, 100);
     vec3 light_color = vec3(1,1,1);
-    float material_shininess = 2.0;
+    float material_shininess = 32.0;
 
     // light components
     vec3 light_ambient = 0.1*light_color;
@@ -207,7 +207,7 @@ def main():
         glUniform3f(view_pos_loc, eye.x, eye.y, eye.z)
         
         # uniform light pos
-        light = camera.get_light_pos(np.radians(10), np.radians(-30))
+        light = camera.get_light_pos(0, 0)
         glUniform3f(light_pos_loc, light.x, light.y, light.z)
         
         t = glfwGetTime()
@@ -218,9 +218,9 @@ def main():
                 obj_manager.draw_single_object(P*V, uniform_locs)
         else:
             if obj_manager.root_object is not None:
-                # obj_manager.root_object.set_transform(glm.translate((0, np.sin(t), 0)))
-                obj_manager.root_object.children[0].set_transform(glm.rotate(np.cos(5*t), (0, 1, 0))*glm.translate((0, 0, t)))
-                obj_manager.root_object.children[1].set_transform(glm.translate((2, 0, 2))*glm.rotate(10*t, (0, 1, 0))*glm.translate((0, -np.sin(t)*.5, 0)))
+                obj_manager.root_object.set_transform(glm.translate((0, np.sin(t), 0)))
+                # obj_manager.root_object.children[0].set_transform(glm.rotate(np.cos(5*t), (0, 1, 0))*glm.translate((0, 0, t)))
+                obj_manager.root_object.children[1].set_transform(glm.translate((2, 0, 2))*glm.rotate(10*t, (0, 1, 0))*glm.translate((0, -np.sin(3*t)*.5, 0)))
                 obj_manager.root_object.children[2].set_transform(glm.translate((-2, 0, -3)))
                 obj_manager.draw_mario_objects(P*V, uniform_locs)
         

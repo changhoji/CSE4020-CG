@@ -234,7 +234,6 @@ def main():
         glUniform3f(light_pos_loc, light.x, light.y, light.z)
         
         t = glfwGetTime()
-        print("time: ", t)
         
         # draw objects loaded
         if obj_manager.single_mesh:

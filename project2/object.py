@@ -27,10 +27,11 @@ class ObjectManager:
         path = os.path.join('hemisphere.obj')
         
         ground = Object(load_object_vertices(path), None, glm.translate((0, 2, 0))*glm.scale((8, 5, 8)), glm.vec3(.8, .8, 1))
-        wiggler = Object(load_object_vertices(os.path.join('wiggler.obj')), ground, glm.translate((0, 2, 0))*glm.rotate(glm.radians(-90), (1,0,0)), glm.vec3(.5, 0, .1))
+        wiggler = Object(load_object_vertices(os.path.join('wiggler.obj')), ground, glm.translate((0, 2, 0))*glm.rotate(glm.radians(-90), (1,0,0)), glm.vec3(.5, .01, .01))
         mario = Object(load_object_vertices(os.path.join('catmario.obj')), wiggler, glm.translate((0, 3, 0))*glm.scale((.2, .2, .2)), glm.vec3(.8, .8, .1))
         coin = Object(load_object_vertices(os.path.join('coin.obj')), ground, glm.translate((0, 3, 0))*glm.scale((.005, .005, .005)), glm.vec3(1, 1, 0))
         tree = Object(load_object_vertices(os.path.join('tree.obj')), ground, glm.translate((0, 2, 0))*glm.scale((.01, .01, .01)), glm.vec3(.2, 1, .2))
+        goomba = Object(load_object_vertices(os.path.join('goomba.obj')), ground, glm.translate((3, 2, 0))*glm.scale((.3, .3, .3)), glm.vec3(.7, .2, .2))
         
         self.objects = {'ground':ground, 'wiggler':wiggler, 'mario':mario, 'coin':coin, 'tree':tree}
         self.root_object = ground
@@ -119,17 +120,19 @@ class Object:
         
         return VAO, int(len(vertices)/2)
         
-def load_object_vertices(path):
+def load_object_vertices(path, drop = True):
     if os.path.splitext(path)[1] != ".obj":
         print("can open only obj file")
         return
-    
-    print("path: ", path)
     
     positions = []
     normals = []
     
     vertices = []
+    
+    face_3 = 0
+    face_4 = 0
+    face_more = 0
     
     with open(path, "r") as file:
         for line in file:
@@ -150,12 +153,18 @@ def load_object_vertices(path):
                 
             elif args[0] == "f":
                 face = []
+                if len(args)-1 == 3:
+                    face_3 += 1
+                elif len(args)-1 == 4:
+                    face_4 += 1
+                elif len(args)-1 >= 5:
+                    face_more += 1
                 for arg in args[1:]: # arg = 1//2
                     temp = {}
                     toks = arg.split("/") # toks = ['1', '', '2']
                     # print("toks: ", toks)
                     temp["position"] = int(toks[0])-1
-                    temp["normal"] = int(toks[2])-1 # normal이 다 0,0,0 이었음
+                    temp["normal"] = int(toks[2])-1
                     face.append(temp)
                 for i in range(1, len(face) - 1):
                     vertices.append(positions[face[0]["position"]])
@@ -167,6 +176,14 @@ def load_object_vertices(path):
                         vertices.append(normals[normal_index])
         
     vertices = glm.array(np.array(vertices))
+    
+    if drop is True:
+        print()
+        print('file name:', os.path.basename(path))
+        print('total number of faces:', face_3+face_4+face_more)
+        print('number of faces with 3 vertices:', face_3)
+        print('number of faces with 4 vertices:', face_4)
+        print('number of faces with more than 4 vertices:', face_more)
     
     return vertices
         

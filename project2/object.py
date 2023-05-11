@@ -3,11 +3,13 @@ from glfw.GLFW import *
 import numpy as np
 import glm
 import os
+from physics import *
 
 class ObjectManager:
     def __init__(self):
         self.object = None
         self.root_object = None
+        self.objects = {}
         self.single_mesh = True
         
     def set_object(self, object):
@@ -25,10 +27,12 @@ class ObjectManager:
         path = os.path.join('hemisphere.obj')
         
         ground = Object(load_object_vertices(path), None, glm.translate((0, 2, 0))*glm.scale((8, 5, 8)), glm.vec3(.8, .8, 1))
-        mario = Object(load_object_vertices(os.path.join('mario.obj')), ground, glm.translate((0, 2, 0))*glm.scale((.2, .2, .2)), glm.vec3(.2, .2, .2))
+        wiggler = Object(load_object_vertices(os.path.join('wiggler.obj')), ground, glm.translate((0, 2, 0))*glm.rotate(glm.radians(-90), (1,0,0)), glm.vec3(.5, 0, .1))
+        mario = Object(load_object_vertices(os.path.join('catmario.obj')), wiggler, glm.translate((0, 3, 0))*glm.scale((.2, .2, .2)), glm.vec3(.8, .8, .1))
         coin = Object(load_object_vertices(os.path.join('coin.obj')), ground, glm.translate((0, 3, 0))*glm.scale((.005, .005, .005)), glm.vec3(1, 1, 0))
         tree = Object(load_object_vertices(os.path.join('tree.obj')), ground, glm.translate((0, 2, 0))*glm.scale((.01, .01, .01)), glm.vec3(.2, 1, .2))
         
+        self.objects = {'ground':ground, 'wiggler':wiggler, 'mario':mario, 'coin':coin, 'tree':tree}
         self.root_object = ground
         
     def draw_mario_objects(self, VP, locs):

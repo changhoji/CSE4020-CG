@@ -8,6 +8,7 @@ import os
 from vaos import *
 from callbacks import *
 from shader import load_shaders
+from physics import *
 
 from camera import camera
 from object import obj_manager
@@ -73,6 +74,8 @@ void main()
 g_fragment_shader_src_mesh = '''
 #version 330 core
 
+#define NLIGHT 3
+
 in vec3 vout_surface_pos;
 in vec3 vout_normal;
 
@@ -82,10 +85,8 @@ uniform vec3 view_pos;
 uniform vec3 light_pos;
 uniform vec3 material_color;
 
-void main()
-{
+vec3 calculate_shading(vec3 light_pos) {
     // light and material properties
-    // vec3 light_pos = vec3(100, 100, 100);
     vec3 light_color = vec3(1,1,1);
     float material_shininess = 32.0;
 
@@ -118,7 +119,29 @@ void main()
     vec3 specular = spec * light_specular * material_specular;
 
     vec3 color = ambient + diffuse + specular;
-    FragColor = vec4(color, 1.);
+    
+    return color;
+}
+
+void main()
+{
+    // vec3 lights[NLIGHT] = {vec3(10, 10, 10), vec3(-10, -10, -10), vec3(0, -10, 0)};
+    vec3 lights[NLIGHT];
+    lights[0] = vec3(100, 100, 100);
+    lights[1] = vec3(-100, 100, -100);
+    lights[2] = vec3(0, -10, 0);
+    vec3 result_color = calculate_shading(lights[0]);
+    
+    for (int i = 1; i < NLIGHT; i++) {
+        vec3 color = calculate_shading(lights[i]);
+        
+        if (result_color.x < color.x) result_color.x = color.x;
+        if (result_color.y < color.y) result_color.y = color.y;
+        if (result_color.z < color.z) result_color.z = color.z;
+    }
+    
+    
+    FragColor = vec4(result_color, 1.);
 }
 '''
 
@@ -211,6 +234,7 @@ def main():
         glUniform3f(light_pos_loc, light.x, light.y, light.z)
         
         t = glfwGetTime()
+        print("time: ", t)
         
         # draw objects loaded
         if obj_manager.single_mesh:
@@ -219,9 +243,10 @@ def main():
         else:
             if obj_manager.root_object is not None:
                 obj_manager.root_object.set_transform(glm.translate((0, np.sin(t), 0)))
-                # obj_manager.root_object.children[0].set_transform(glm.rotate(np.cos(5*t), (0, 1, 0))*glm.translate((0, 0, t)))
-                obj_manager.root_object.children[1].set_transform(glm.translate((2, 0, 2))*glm.rotate(10*t, (0, 1, 0))*glm.translate((0, -np.sin(3*t)*.5, 0)))
-                obj_manager.root_object.children[2].set_transform(glm.translate((-2, 0, -3)))
+                obj_manager.objects['mario'].set_transform(jump(t,1))
+                obj_manager.objects['coin'].set_transform(glm.translate((2, 0, 2))*glm.rotate(10*t, (0, 1, 0))*glm.translate((0, -np.sin(3*t)*.5, 0)))
+                obj_manager.objects['tree'].set_transform(glm.translate((-2, 0, -3)))
+                obj_manager.objects['wiggler'].set_transform(glm.translate((0, 0, (np.sin(2*t)))))
                 obj_manager.draw_mario_objects(P*V, uniform_locs)
         
         # swap front and back buffers

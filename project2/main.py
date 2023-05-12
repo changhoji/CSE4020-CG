@@ -242,10 +242,11 @@ def main():
         else:
             if obj_manager.root_object is not None:
                 obj_manager.root_object.set_transform(glm.translate((0, np.sin(t), 0)))
-                obj_manager.objects['mario'].set_transform(jump(t,1))
-                obj_manager.objects['coin'].set_transform(glm.translate((2, 0, 2))*glm.rotate(10*t, (0, 1, 0))*glm.translate((0, -np.sin(3*t)*.5, 0)))
-                obj_manager.objects['tree'].set_transform(glm.translate((-2, 0, -3)))
-                obj_manager.objects['wiggler'].set_transform(glm.translate((0, 0, (np.sin(2*t)))))
+                obj_manager.objects['mario'].set_transform(jump(t,1.5))
+                obj_manager.objects['luigi'].set_transform(jump(t+.4,1.5))
+                obj_manager.objects['coin'].set_transform(glm.translate((2, 0, 2))*glm.rotate(10*t, (0, 1, 0)))
+                obj_manager.objects['tree'].set_transform(glm.translate((-8, 0, -10))*glm.rotate(np.sin(2*t+.2)*.1, (1, 0, 0)))
+                obj_manager.objects['wiggler'].set_transform(glm.translate((10, 0, 0))*glm.rotate(t, (0, 1, 0))*glm.translate((-5, 0, 0)))
                 obj_manager.draw_mario_objects(P*V, uniform_locs)
         
         # swap front and back buffers

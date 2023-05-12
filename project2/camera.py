@@ -3,7 +3,7 @@ import numpy as np
 
 class Camera:
     def __init__(self):
-        self.distance  = 10.
+        self.distance  = 30.
         self.azimuth   = glm.degrees(30.)
         self.elevation = glm.degrees(45.)
         self.pan = glm.vec3(0.,0.,0.)  

@@ -88,7 +88,7 @@ uniform vec3 material_color;
 vec3 calculate_shading(vec3 light_pos) {
     // light and material properties
     vec3 light_color = vec3(1,1,1);
-    float material_shininess = 32.0;
+    float material_shininess = 100.0;
 
     // light components
     vec3 light_ambient = 0.1*light_color;
@@ -155,7 +155,7 @@ def main():
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE) # for macOS
 
     # create a window and OpenGL context
-    window = glfwCreateWindow(1000, 1000, '2021035487', None, None)
+    window = glfwCreateWindow(800, 800, '2021035487', None, None)
     if not window:
         glfwTerminate()
         return
@@ -185,10 +185,6 @@ def main():
     # prepare vaos
     num_of_lines = 100
     vao_grid = prepare_vao_grid(num_of_lines)
-    
-    # os.chdir('samples')
-    # path = os.path.join('cube-tri.obj')
-    # obj_manager.object = Object(load_object_vertices(path))
     
     obj_manager.prepare_mario_objects()
     
@@ -244,10 +240,11 @@ def main():
                 obj_manager.root_object.set_transform(glm.translate((0, np.sin(t), 0)))
                 obj_manager.objects['mario'].set_transform(jump(t,1.5))
                 obj_manager.objects['luigi'].set_transform(jump(t+.4,1.5))
-                obj_manager.objects['coin'].set_transform(glm.translate((2, 0, 2))*glm.rotate(10*t, (0, 1, 0)))
+                obj_manager.objects['coin'].set_transform(glm.translate((0,(np.sin(3*t)+1)*.5,0))*glm.rotate(7*t, (0, 1, 0)))
                 obj_manager.objects['tree'].set_transform(glm.translate((-8, 0, -10))*glm.rotate(np.sin(2*t+.2)*.06, (1, 0, 0)))
                 obj_manager.objects['wiggler'].set_transform(glm.translate((10, 0, 0))*glm.rotate(t, (0, 1, 0))*glm.translate((-5, 0, 0)))
-                obj_manager.objects['goomba'].set_transform(glm.translate((-10, 0, 7)))
+                obj_manager.objects['goomba'].set_transform(glm.translate((-8,2,7))*glm.translate((0,0,7*np.sin(2.3*t+1.2))))
+                obj_manager.objects['star'].set_transform(glm.translate((5*np.cos(2*t), 0, 5*np.sin(2*t)))*glm.rotate(3*t, (0,1,0)))
                 obj_manager.draw_mario_objects(P*V, uniform_locs)
         
         # swap front and back buffers

@@ -24,17 +24,17 @@ class ObjectManager:
         
     def prepare_mario_objects(self):
         os.chdir('samples/hierarchical')
-        path = os.path.join('hemisphere.obj')
 
-        ground = Object(load_object_vertices(path), None, glm.translate((0, 2, 0))*glm.scale((20, 10, 20)), glm.vec3(.8, .8, 1))
+        ground = Object(load_object_vertices('hemisphere.obj'), None, glm.translate((0, 2, 0))*glm.scale((20, 10, 20)), glm.vec3(.8, .8, 1))
         wiggler = Object(load_object_vertices(os.path.join('wiggler.obj')), ground, glm.translate((0, 2, 0))*glm.rotate(glm.radians(-90), (1,0,0))*glm.scale((2, 2, 2)), glm.vec3(.5, .01, .01))
         mario = Object(load_object_vertices(os.path.join('catmario.obj')), wiggler, glm.translate((0, 4, -.5))*glm.scale((.2, .2, .2)), glm.vec3(.8, .8, .1))
         luigi = Object(load_object_vertices(os.path.join('luigi.obj')), wiggler, glm.translate((0, 4, 1.5))*glm.scale((.2, .2, .2)), glm.vec3(.1, .8, .1))
-        coin = Object(load_object_vertices(os.path.join('coin.obj')), ground, glm.translate((0, 3, 0))*glm.scale((.01, .01, .01)), glm.vec3(1, 1, 0))
         tree = Object(load_object_vertices(os.path.join('tree.obj')), ground, glm.translate((0, 2, 0))*glm.scale((.03, .03, .03)), glm.vec3(.2, 1, .2))
-        goomba = Object(load_object_vertices(os.path.join('goomba.obj')), ground, glm.translate((3, 2, 0))*glm.scale((.2, .2, .2)), glm.vec3(.3, .0, .0))
+        goomba = Object(load_object_vertices(os.path.join('goomba.obj')), ground, glm.scale((.2, .2, .2)), glm.vec3(121, 77, 60)*0.004)
+        coin = Object(load_object_vertices(os.path.join('coin.obj')), goomba, glm.translate((0, 4, 0))*glm.scale((.01, .01, .01)), glm.vec3(1, 1, 0))
+        star = Object(load_object_vertices(os.path.join('star.obj')), goomba, glm.scale((.3, .3, .3)),  glm.vec3(1, 1, 0))
         
-        self.objects = {'ground':ground, 'wiggler':wiggler, 'mario':mario, 'coin':coin, 'tree':tree, 'luigi':luigi, 'goomba':goomba}
+        self.objects = {'ground':ground, 'wiggler':wiggler, 'mario':mario, 'coin':coin, 'tree':tree, 'luigi':luigi, 'goomba':goomba, 'star':star}
         self.root_object = ground
         
     def draw_mario_objects(self, VP, locs):

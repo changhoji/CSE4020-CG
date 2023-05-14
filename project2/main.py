@@ -88,7 +88,7 @@ uniform vec3 material_color;
 vec3 calculate_shading(vec3 light_pos) {
     // light and material properties
     vec3 light_color = vec3(1,1,1);
-    float material_shininess = 100.0;
+    float material_shininess = 50.0;
 
     // light components
     vec3 light_ambient = 0.1*light_color;

@@ -68,7 +68,7 @@ def cursor_callback(window, xpos, ypos):
     
 def drop_callback(window, paths):
     path = paths[0]
-    object = Object(load_object_vertices(path), None, glm.scale((.001, .001, .001)))
+    object = Object(load_object_vertices(path, True))
     obj_manager.single_mesh = True
     obj_manager.set_object(object)
     

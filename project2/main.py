@@ -129,7 +129,7 @@ void main()
     vec3 lights[NLIGHT];
     lights[0] = vec3(100, 100, 100);
     lights[1] = vec3(-100, 100, -100);
-    lights[2] = vec3(0, -10, 0);
+    lights[2] = vec3(0, -100, 0);
     vec3 result_color = calculate_shading(lights[0]);
     
     for (int i = 1; i < NLIGHT; i++) {

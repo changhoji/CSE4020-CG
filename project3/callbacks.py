@@ -60,4 +60,7 @@ def cursor_callback(window, xpos, ypos):
     
     # update current cursor position
     current_cursor = [xpos, ypos]
+
+def drop_callback(window, paths):
+    path = paths[0]
     

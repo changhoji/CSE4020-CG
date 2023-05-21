@@ -3,12 +3,15 @@ from glfw.GLFW import *
 import glm
 import ctypes
 import numpy as np
+import os
+import time
 
 from vaos import *
 from callbacks import *
 from shader import load_shaders
 
 from camera import camera
+from object import *
 
 # vertex shader source code
 g_vertex_shader_src = '''
@@ -78,6 +81,12 @@ def main():
     num_of_lines = 100
     vao_grid = prepare_vao_grid(num_of_lines)
     
+    path = os.path.join("samples/sample-spin.bvh")
+    load_bvh_file(path)
+    
+    curtime = time.time()
+    frame_index = 0
+    
     # loop until the user closes the window
     while not glfwWindowShouldClose(window):     
         # enable depth test
@@ -103,6 +112,14 @@ def main():
         glBindVertexArray(vao_grid)
         glDrawArrays(GL_LINES, 0, num_of_lines*8+4)
         
+        
+        # draw bvh objects
+        if time.time() - curtime > bvh.frame_time:
+            curtime = time.time()
+            
+        
+        bvh.root.update_tree_global_transform()
+        bvh.root.draw(MVP_loc, P*V)
         # -- draw objects --
         
         # swap front and back buffers

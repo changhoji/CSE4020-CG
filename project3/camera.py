@@ -3,9 +3,9 @@ import numpy as np
 
 class Camera:
     def __init__(self):
-        self.distance  = 10.
-        self.azimuth   = glm.degrees(30.)
-        self.elevation = glm.degrees(45.)
+        self.distance  = 5.
+        self.azimuth   = -1.2
+        self.elevation = 3
         self.pan = glm.vec3(0.,0.,0.)  
         self.orthogonal = False
     
@@ -19,7 +19,7 @@ class Camera:
     
     # zoom in and out
     def increase_distance(self):
-        self.distance = min(100, self.distance*1.1)
+        self.distance = min(1000, self.distance*1.1)
     def decrase_distance(self):
         self.distance = max(.01, self.distance*.9)
     

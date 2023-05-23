@@ -81,14 +81,20 @@ def main():
     num_of_lines = 100
     vao_grid = prepare_vao_grid(num_of_lines)
     
-    path = os.path.join("samples/sample-spin.bvh")
+    path = os.path.join("samples/jump-twist.bvh")
+    path = os.path.join("samples/sample-walk.bvh")
+    # path = os.path.join("samples/sample-spin.bvh")
+    # path = os.path.join("samples/jumping.bvh")
     load_bvh_file(path)
+    
+    # bvh.root.print_hierarchy()
     
     curtime = time.time()
     frame_index = 0
+    bvh.adjust_frame(bvh.root, frame_index)
     
     # loop until the user closes the window
-    while not glfwWindowShouldClose(window):     
+    while not glfwWindowShouldClose(window):
         # enable depth test
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glEnable(GL_DEPTH_TEST)
@@ -115,12 +121,16 @@ def main():
         
         # draw bvh objects
         if time.time() - curtime > bvh.frame_time:
-            curtime = time.time()
+            if frame_index < bvh.frame_number:
+                curtime = time.time()
+                bvh.adjust_frame(bvh.root, frame_index)
+                frame_index += 1
             
         
         bvh.root.update_tree_global_transform()
         bvh.root.draw(MVP_loc, P*V)
-        # -- draw objects --
+        
+        
         
         # swap front and back buffers
         glfwSwapBuffers(window)

@@ -17,14 +17,45 @@ class Bvh:
         self.frame_time = frame_time
         self.frames = frames
         
-    def adjust_frame(self, node, frame_index, idx):
-        if node.name == 'End Site':
-            return
-        
+    def adjust_frame(self, node, frame_index, next_idx = 0):
         frame = self.frames[frame_index]
         
         if node.parent is None: # root
-            1
+            translate = glm.translate((frame[0], frame[1], frame[2]))
+            next_idx = 3
+            R = glm.mat4()
+            for i in range(len(node.channels)-3):
+                chan = node.channels[3+i].upper()
+                if chan == 'XROTATION':
+                    R = R * glm.rotate(glm.radians(frame[3+i]), (1,0,0))
+                elif chan == 'YROTATION':
+                    R = R * glm.rotate(glm.radians(frame[3+i]), (0,1,0))
+                elif chan == 'ZROTATION':
+                    R = R * glm.rotate(glm.radians(frame[3+i]), (0,0,1))
+            
+            next_idx = 6
+            node.joint_transform = translate * R
+        
+        elif node.name != 'End Site':
+            R = glm.mat4()
+            for i in range(len(node.channels)):
+                chan = node.channels[i].upper()
+                if chan == 'XROTATION':
+                    R = R * glm.rotate(glm.radians(frame[next_idx]), (1,0,0))
+                elif chan == 'YROTATION':
+                    R = R * glm.rotate(glm.radians(frame[next_idx]), (0,1,0))
+                elif chan == 'ZROTATION':
+                    R = R * glm.rotate(glm.radians(frame[next_idx]), (0,0,1))
+                next_idx += 1
+                
+            node.joint_transform = R
+
+        for child in node.children:
+            next_idx = self.adjust_frame(child, frame_index, next_idx)
+            
+        return next_idx
+                
+                
         
 
 class Node:
@@ -37,7 +68,7 @@ class Node:
         self.cnt = 0
         self.parent = parent
         
-        self.link_transform_from_parent = glm.mat4()
+        self.link_transform = glm.mat4()
         self.joint_transform = glm.mat4()
         self.global_transform = glm.mat4()
         
@@ -46,22 +77,25 @@ class Node:
         
     def set_offset(self, x, y, z):
         self.offset = glm.vec3(x, y, z)
-        self.link_transform_from_parent = glm.translate(self.offset)
+        if self.name != 'End Site':
+            self.link_transform = glm.translate(self.offset)
+            
         
     def append_channel(self, channel):
         self.channels.append(channel)
         
     def update_tree_global_transform(self):
         if self.parent is not None:
-            self.global_transform = self.parent.global_transform * self.link_transform_from_parent
+            self.global_transform = self.parent.global_transform * self.parent.link_transform * self.joint_transform
         else:
-            self.global_transform = self.link_transform_from_parent
+            self.global_transform = self.joint_transform
             
         for child in self.children:
             child.update_tree_global_transform()
     
     def prepare_vao(self):
-        vertices = glm.array(glm.vec3(0, 0, 0), glm.vec3(0, 1, 0), self.offset, glm.vec3(0, 1, 0))
+        vertices = glm.array(glm.vec3(0, 0, 0), glm.vec3(0, 1, 0), 
+                                   self.offset, glm.vec3(0, 1, 0))
         
         VAO = glGenVertexArrays(1)
         glBindVertexArray(VAO)
@@ -94,7 +128,9 @@ class Node:
             child.draw(MVP_loc, VP)
         
     def print_hierarchy(self, level = 0):
-        print('\t'*level + self.name)
+        print('\t'*level + self.name + '\t' + 'link -> ')
+        print(self.link_transform)
+        print()
         for child in self.children:
             child.print_hierarchy(level+1)
 

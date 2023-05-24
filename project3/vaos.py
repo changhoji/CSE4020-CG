@@ -21,6 +21,15 @@ def prepare_vao_grid(num_of_lines):
             i, 0.0,  num_of_lines, color, color, color,
         )
         vertices = vertices.concat(temp) # append
+    
+    vertices = vertices.concat(glm.array(glm.float32,
+                        0., 0., 0., 1., 0., 0.,
+                        10., 0., 0., 1., 0., 0.,
+                        0., 0., 0., 0., 1., 0.,
+                        0., 10., 0., 0., 1., 0.,
+                        0., 0., 0., 0., 0., 1.,
+                        0., 0., 10., 0., 0., 1.,
+                        ))
 
     # create and activate VAO (vertex array object)
     VAO = glGenVertexArrays(1)  # create a vertex array object ID and store it to VAO variable

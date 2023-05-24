@@ -116,14 +116,14 @@ def main():
 
         # draw lines in xz plane
         glBindVertexArray(vao_grid)
-        glDrawArrays(GL_LINES, 0, num_of_lines*8+4)
+        glDrawArrays(GL_LINES, 0, num_of_lines*8+4+6)
         
         
         # draw bvh objects
         if time.time() - curtime > bvh.frame_time:
             if frame_index < bvh.frame_number:
                 curtime = time.time()
-                bvh.adjust_frame(bvh.root, frame_index)
+                # bvh.adjust_frame(bvh.root, frame_index)
                 frame_index += 1
             
         

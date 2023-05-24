@@ -40,6 +40,7 @@ class Bvh:
             R = glm.mat4()
             for i in range(len(node.channels)):
                 chan = node.channels[i].upper()
+                print(chan)
                 if chan == 'XROTATION':
                     R = R * glm.rotate(glm.radians(frame[next_idx]), (1,0,0))
                 elif chan == 'YROTATION':
@@ -48,16 +49,13 @@ class Bvh:
                     R = R * glm.rotate(glm.radians(frame[next_idx]), (0,0,1))
                 next_idx += 1
                 
-            node.joint_transform = R
+            node.joint_transform = glm.mat4(R)
 
         for child in node.children:
             next_idx = self.adjust_frame(child, frame_index, next_idx)
             
         return next_idx
                 
-                
-        
-
 class Node:
     def __init__(self, parent, name):
         self.children = []
@@ -94,8 +92,15 @@ class Node:
             child.update_tree_global_transform()
     
     def prepare_vao(self):
-        vertices = glm.array(glm.vec3(0, 0, 0), glm.vec3(0, 1, 0), 
-                                   self.offset, glm.vec3(0, 1, 0))
+        vertices = glm.array(glm.vec3(0, 0, 0), glm.vec3(1, 1, 1), 
+                                   self.offset, glm.vec3(1, 1, 1),
+                             glm.vec3(0,0,0), glm.vec3(1,0,0),
+                             glm.vec3(.1,0,0), glm.vec3(1,0,0),
+                             glm.vec3(0,0,0), glm.vec3(0,1,0),
+                             glm.vec3(0,.1,0), glm.vec3(0,1,0),
+                             glm.vec3(0,0,0), glm.vec3(0,0,1),
+                             glm.vec3(0,0,.1), glm.vec3(0,0,1),
+                             )
         
         VAO = glGenVertexArrays(1)
         glBindVertexArray(VAO)
@@ -112,17 +117,18 @@ class Node:
         glEnableVertexAttribArray(1)
         
         self.vao = VAO;
-        self.cnt = 2;
+        self.cnt = len(vertices)//2;
         
         for child in self.children:
             child.prepare_vao()
             
     def draw(self, MVP_loc, VP):
+        # print(f"name: {self.name}, {self.offset} => {self.global_transform*glm.vec4(self.offset, 1)}")
         MVP = VP * self.global_transform
         
         glBindVertexArray(self.vao)
         glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
-        glDrawArrays(GL_LINES, 0, 2)
+        glDrawArrays(GL_LINES, 0, self.cnt)
         
         for child in self.children:
             child.draw(MVP_loc, VP)

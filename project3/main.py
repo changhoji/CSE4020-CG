@@ -8,47 +8,12 @@ import time
 
 from vaos import *
 from callbacks import *
-from shader import load_shaders
+from shader import *
 
 from camera import camera
 from object import *
 from mode import modes
 
-# vertex shader source code
-g_vertex_shader_src = '''
-#version 330 core
-
-layout (location = 0) in vec3 vin_pos; 
-layout (location = 1) in vec3 vin_color; 
-
-out vec4 vout_color;
-
-uniform mat4 MVP;
-
-void main()
-{
-    // 3D points in homogeneous coordinates
-    vec4 p3D_in_hcoord = vec4(vin_pos.xyz, 1.0);
-
-    gl_Position = MVP * p3D_in_hcoord;
-
-    vout_color = vec4(vin_color, 1.);
-}
-'''
-
-# fragment shader source code
-g_fragment_shader_src = '''
-#version 330 core
-
-in vec4 vout_color;
-
-out vec4 FragColor;
-
-void main()
-{
-    FragColor = vout_color;
-}
-'''
 
 def main():
     # initialize glfw
@@ -90,6 +55,7 @@ def main():
     
     # bvh.root.print_hierarchy()
     
+    toggle = 0
     curtime = time.time()
     frame_index = 0
     bvh.adjust_frame(bvh.root, frame_index)
@@ -121,21 +87,26 @@ def main():
         
         
         # draw bvh objects
-        
-        if time.time() - curtime > bvh.frame_time:
-            if frame_index < bvh.frame_number:
-                curtime = time.time()
-                bvh.adjust_frame(bvh.root, frame_index)
-                frame_index += 1
         if modes.animating is True:
-            1
-            # frame_index = 0
-        else:
+            if toggle == 1:
+                if time.time() - curtime > bvh.frame_time:
+                    if frame_index < bvh.frame_number:
+                        curtime = time.time()
+                        bvh.adjust_frame(bvh.root, frame_index)
+                        frame_index += 1
+                        if frame_index == bvh.frame_number:
+                            frame_index = 0
+            else:
+                frame_index = 0
+                toggle = 1
+        elif modes.animating is False:
             bvh.reset_pose(bvh.root)
-            
+            toggle = 0
         
         bvh.root.update_tree_global_transform()
-        bvh.root.draw(MVP_loc, P*V)
+        
+        
+        bvh.root.draw_box(MVP_loc, P*V)
         
         
         

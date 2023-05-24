@@ -80,9 +80,12 @@ class Node:
         self.name = name
         self.channels = []
         self.offset = None
-        self.vao = None
-        self.cnt = 0
         self.parent = parent
+        
+        self.line_vao = None
+        self.line_cnt = 0
+        self.box_vao = None
+        self.box_cnt = 0
         
         self.link_transform = glm.mat4()
         self.joint_transform = glm.mat4()
@@ -108,16 +111,10 @@ class Node:
         for child in self.children:
             child.update_tree_global_transform()
     
-    def prepare_vao(self):
+    def prepare_line_vao(self):
         vertices = glm.array(glm.vec3(0, 0, 0), glm.vec3(1, 1, 1), 
                                    self.offset, glm.vec3(1, 1, 1),
-                             glm.vec3(0, 0, 0), glm.vec3(1, 0, 0),
-                             glm.vec3(.1, 0, 0), glm.vec3(1, 0, 0),
-                             glm.vec3(0, 0, 0), glm.vec3(0, 1, 0),
-                             glm.vec3(0, .1, 0), glm.vec3(0, 1, 0),
-                             glm.vec3(0, 0, 0), glm.vec3(0, 0, 1),
-                             glm.vec3(0, 0, .1), glm.vec3(0, 0, 1),
-                             )
+                                   )
         
         VAO = glGenVertexArrays(1)
         glBindVertexArray(VAO)
@@ -133,25 +130,82 @@ class Node:
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*glm.sizeof(glm.float32), ctypes.c_void_p(3*glm.sizeof(glm.float32)))
         glEnableVertexAttribArray(1)
         
-        self.vao = VAO;
-        self.cnt = len(vertices)//2;
+        self.line_vao = VAO
+        self.line_cnt = len(vertices)//2
         
         for child in self.children:
-            child.prepare_vao()
+            child.prepare_line_vao()
             
-    def draw(self, MVP_loc, VP):
-        # print(f"name: {self.name}, {self.offset} => {self.global_transform*glm.vec4(self.offset, 1)}")
+    def prepare_box_vao(self):
+        print(self.name)
+        vertices = []
+        points = [glm.vec3(.1, 0, .1), glm.vec3(.1, 0, -.1), glm.vec3(-.1, 0, -.1), glm.vec3(-.1, 0, .1),
+                  glm.vec3(.1, 0, .1), glm.vec3(.1, 0, -.1), glm.vec3(-.1, 0, -.1), glm.vec3(-.1, 0, .1),]
+        if self.parent is not bvh.root:
+            len = glm.length(self.offset)
+            vec1 = glm.normalize(glm.vec3(0,len,0))
+            vec2 = glm.normalize(self.offset)
+            
+            dot = glm.dot(vec1, vec2)
+            cross = glm.cross(vec1,vec2)
+            
+            axis = glm.normalize(cross)
+            angle = glm.acos(dot)
+            
+            rotate = glm.rotate(angle, axis)
+            l = .05
+            points = [glm.vec3(l, 0, l), glm.vec3(l, 0, -l), glm.vec3(-l, 0, -l), glm.vec3(-l, 0, l),
+                      glm.vec3(l, len, l), glm.vec3(l, len, -l), glm.vec3(-l, len, -l), glm.vec3(-l, len, l),]
+            points = [(rotate*glm.vec4(x, 1)).xyz for x in points]
+            indices = ['012', '023', '456', '467', '015', '054', '156', '167', '267', '273', '374', '340']
+            for index in indices:
+                for i in index:
+                    vertices.append(points[int(i)])
+                    vertices.append(glm.vec3(.5, .5, 1))
+            
+            vertices = glm.array(np.array(vertices))
+            VAO = glGenVertexArrays(1)
+            glBindVertexArray(VAO)
+            
+            VBO = glGenBuffers(1)
+            glBindBuffer(GL_ARRAY_BUFFER, VBO)
+            
+            glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices.ptr, GL_STATIC_DRAW)
+            
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*glm.sizeof(glm.float32), None)
+            glEnableVertexAttribArray(0)
+            
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*glm.sizeof(glm.float32), ctypes.c_void_p(3*glm.sizeof(glm.float32)))
+            glEnableVertexAttribArray(1)
+            self.box_vao = VAO
+            self.box_cnt = 36
+            
+            
+        for child in self.children:
+            child.prepare_box_vao()
+            
+    def draw_line(self, MVP_loc, VP):
         MVP = VP * self.global_transform
         
-        glBindVertexArray(self.vao)
+        glBindVertexArray(self.line_vao)
         glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
-        if self.parent is not None and self.parent.name == 'Spine' and self.name != 'LeftArm':
-            glDrawArrays(GL_LINES, 0, 2)
-        else:
-            glDrawArrays(GL_LINES, 0, self.cnt)
+        
+        glDrawArrays(GL_LINES, 0, self.line_cnt)
         
         for child in self.children:
-            child.draw(MVP_loc, VP)
+            child.draw_line(MVP_loc, VP)
+    
+    def draw_box(self, MVP_loc, VP):
+        MVP = VP * self.global_transform
+        
+        if self.box_vao is not None:
+            glBindVertexArray(self.box_vao)
+            glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
+            
+            glDrawArrays(GL_TRIANGLES, 0, self.box_cnt)
+        
+        for child in self.children:
+            child.draw_box(MVP_loc, VP)
         
     def print_hierarchy(self, level = 0):
         print('\t'*level + self.name + '\t' + 'link -> ')
@@ -226,7 +280,8 @@ def load_bvh_file(path):
             words = file.readline().split()
             
         bvh.set_attributes(root, frame_number, frame_time, frames)
-        bvh.root.prepare_vao()
+        bvh.root.prepare_line_vao()
+        bvh.root.prepare_box_vao()
 
             
 bvh = Bvh()

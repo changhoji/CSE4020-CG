@@ -3,6 +3,7 @@ from glfw.GLFW import *
 import glm
 
 from camera import camera
+from mode import modes
 
 left_button_state = 0
 right_button_state = 0
@@ -18,6 +19,9 @@ def key_callback(window, key, scancode, action, mods):
         if action==GLFW_PRESS or action==GLFW_REPEAT:
             if key == GLFW_KEY_V:
                 camera.toggle_projection()
+            if key == GLFW_KEY_SPACE:
+                modes.animating = not modes.animating
+                
         
 # glfw scroll callback function
 def scroll_callback(window, xoffset, yoffset):

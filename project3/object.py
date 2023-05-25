@@ -17,6 +17,12 @@ class Bvh:
         self.frame_time = frame_time
         self.frames = frames
         
+    def reset_pose(self, node):
+        node.joint_transform = glm.mat4()
+        for child in node.children:
+            self.reset_pose(child)
+        
+        
     def adjust_frame(self, node, frame_index, next_idx = 0):
         frame = self.frames[frame_index]
         
@@ -26,31 +32,43 @@ class Bvh:
             R = glm.mat4()
             for i in range(len(node.channels)-3):
                 chan = node.channels[3+i].upper()
+                angle = glm.radians(frame[next_idx])
+                axis = glm.vec3()
                 if chan == 'XROTATION':
-                    R = R * glm.rotate(glm.radians(frame[3+i]), (1,0,0))
+                    axis = glm.vec3(1,0,0)
                 elif chan == 'YROTATION':
-                    R = R * glm.rotate(glm.radians(frame[3+i]), (0,1,0))
+                    axis = glm.vec3(0,1,0)
                 elif chan == 'ZROTATION':
-                    R = R * glm.rotate(glm.radians(frame[3+i]), (0,0,1))
-            
-            next_idx = 6
+                    axis = glm.vec3(0,0,1)
+                next_idx += 1
+
+                R = R * glm.rotate(angle, axis)
             node.joint_transform = translate * R
+            node.global_transform = node.joint_transform
         
         elif node.name != 'End Site':
             R = glm.mat4()
             for i in range(len(node.channels)):
                 chan = node.channels[i].upper()
-                print(chan)
+                angle = glm.radians(frame[next_idx])
+                axis = glm.vec3()
                 if chan == 'XROTATION':
-                    R = R * glm.rotate(glm.radians(frame[next_idx]), (1,0,0))
+                    axis = glm.vec3(1,0,0)
                 elif chan == 'YROTATION':
-                    R = R * glm.rotate(glm.radians(frame[next_idx]), (0,1,0))
+                    axis = glm.vec3(0,1,0)
                 elif chan == 'ZROTATION':
-                    R = R * glm.rotate(glm.radians(frame[next_idx]), (0,0,1))
+                    axis = glm.vec3(0,0,1)
                 next_idx += 1
                 
+                R = R * glm.rotate(angle, axis)
+                
             node.joint_transform = glm.mat4(R)
+            node.global_transform = node.parent.global_transform * node.parent.link_transform * node.parent.joint_transform
+            
+        elif node.name == 'End Site':
+            node.global_transform = node.parent.global_transform * node.parent.link_transform
 
+        a = 1
         for child in node.children:
             next_idx = self.adjust_frame(child, frame_index, next_idx)
             
@@ -77,16 +95,15 @@ class Node:
         self.offset = glm.vec3(x, y, z)
         if self.name != 'End Site':
             self.link_transform = glm.translate(self.offset)
-            
         
     def append_channel(self, channel):
         self.channels.append(channel)
         
     def update_tree_global_transform(self):
-        if self.parent is not None:
-            self.global_transform = self.parent.global_transform * self.parent.link_transform * self.joint_transform
+        if self.parent is None:
+            self.global_transform = glm.mat4()
         else:
-            self.global_transform = self.joint_transform
+            self.global_transform = self.parent.global_transform * self.parent.link_transform * self.parent.joint_transform
             
         for child in self.children:
             child.update_tree_global_transform()
@@ -94,12 +111,12 @@ class Node:
     def prepare_vao(self):
         vertices = glm.array(glm.vec3(0, 0, 0), glm.vec3(1, 1, 1), 
                                    self.offset, glm.vec3(1, 1, 1),
-                             glm.vec3(0,0,0), glm.vec3(1,0,0),
-                             glm.vec3(.1,0,0), glm.vec3(1,0,0),
-                             glm.vec3(0,0,0), glm.vec3(0,1,0),
-                             glm.vec3(0,.1,0), glm.vec3(0,1,0),
-                             glm.vec3(0,0,0), glm.vec3(0,0,1),
-                             glm.vec3(0,0,.1), glm.vec3(0,0,1),
+                             glm.vec3(0, 0, 0), glm.vec3(1, 0, 0),
+                             glm.vec3(.1, 0, 0), glm.vec3(1, 0, 0),
+                             glm.vec3(0, 0, 0), glm.vec3(0, 1, 0),
+                             glm.vec3(0, .1, 0), glm.vec3(0, 1, 0),
+                             glm.vec3(0, 0, 0), glm.vec3(0, 0, 1),
+                             glm.vec3(0, 0, .1), glm.vec3(0, 0, 1),
                              )
         
         VAO = glGenVertexArrays(1)
@@ -128,7 +145,10 @@ class Node:
         
         glBindVertexArray(self.vao)
         glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
-        glDrawArrays(GL_LINES, 0, self.cnt)
+        if self.parent is not None and self.parent.name == 'Spine' and self.name != 'LeftArm':
+            glDrawArrays(GL_LINES, 0, 2)
+        else:
+            glDrawArrays(GL_LINES, 0, self.cnt)
         
         for child in self.children:
             child.draw(MVP_loc, VP)

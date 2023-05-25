@@ -12,6 +12,7 @@ from shader import load_shaders
 
 from camera import camera
 from object import *
+from mode import modes
 
 # vertex shader source code
 g_vertex_shader_src = '''
@@ -82,7 +83,7 @@ def main():
     vao_grid = prepare_vao_grid(num_of_lines)
     
     path = os.path.join("samples/jump-twist.bvh")
-    path = os.path.join("samples/sample-walk.bvh")
+    # path = os.path.join("samples/sample-walk.bvh")
     # path = os.path.join("samples/sample-spin.bvh")
     # path = os.path.join("samples/jumping.bvh")
     load_bvh_file(path)
@@ -120,11 +121,17 @@ def main():
         
         
         # draw bvh objects
+        
         if time.time() - curtime > bvh.frame_time:
             if frame_index < bvh.frame_number:
                 curtime = time.time()
-                # bvh.adjust_frame(bvh.root, frame_index)
+                bvh.adjust_frame(bvh.root, frame_index)
                 frame_index += 1
+        if modes.animating is True:
+            1
+            # frame_index = 0
+        else:
+            bvh.reset_pose(bvh.root)
             
         
         bvh.root.update_tree_global_transform()

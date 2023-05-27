@@ -1,6 +1,6 @@
 class Mode:
     def __init__(self):
         self.animating = False
-        self.skeleton = True
+        self.line = True
         
 modes = Mode()

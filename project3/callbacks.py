@@ -21,6 +21,10 @@ def key_callback(window, key, scancode, action, mods):
                 camera.toggle_projection()
             if key == GLFW_KEY_SPACE:
                 modes.animating = not modes.animating
+            if key == GLFW_KEY_1:
+                modes.line = True
+            if key == GLFW_KEY_2:
+                modes.line = False
                 
         
 # glfw scroll callback function

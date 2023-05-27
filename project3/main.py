@@ -48,12 +48,12 @@ def main():
     vao_grid = prepare_vao_grid(num_of_lines)
     
     path = os.path.join("samples/jump-twist.bvh")
-    # path = os.path.join("samples/sample-walk.bvh")
+    path = os.path.join("samples/sample-walk.bvh")
     # path = os.path.join("samples/sample-spin.bvh")
     # path = os.path.join("samples/jumping.bvh")
     load_bvh_file(path)
     
-    # bvh.root.print_hierarchy()
+    bvh.root.print_hierarchy()
     
     toggle = 0
     curtime = time.time()
@@ -105,8 +105,10 @@ def main():
         
         bvh.root.update_tree_global_transform()
         
-        
-        bvh.root.draw_box(MVP_loc, P*V)
+        if modes.line is True:
+            bvh.root.draw_line(MVP_loc, P*V)
+        else:
+            bvh.root.draw_box(MVP_loc, P*V)
         
         
         

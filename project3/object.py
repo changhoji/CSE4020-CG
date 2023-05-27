@@ -10,6 +10,7 @@ class Bvh:
         self.frame_number = None
         self.frame_time = None
         self.frames = None
+        self.sum = 0
         
     def set_attributes(self, root, frame_number, frame_time, frames):
         self.root = root
@@ -81,6 +82,7 @@ class Node:
         self.channels = []
         self.offset = None
         self.parent = parent
+        self.level = None
         
         self.line_vao = None
         self.line_cnt = 0
@@ -101,6 +103,15 @@ class Node:
         
     def append_channel(self, channel):
         self.channels.append(channel)
+    
+    def update_level(self, level):
+        if self.level is None:
+            self.level = level
+        else:
+            self.level = min(self.level, level)
+        if self.parent is not None:
+            self.parent.update_level(level+1)
+        
         
     def update_tree_global_transform(self):
         if self.parent is None:
@@ -153,9 +164,8 @@ class Node:
             angle = glm.acos(dot)
             
             rotate = glm.rotate(angle, axis)
-            l = .05
-            points = [glm.vec3(l, 0, l), glm.vec3(l, 0, -l), glm.vec3(-l, 0, -l), glm.vec3(-l, 0, l),
-                      glm.vec3(l, len, l), glm.vec3(l, len, -l), glm.vec3(-l, len, -l), glm.vec3(-l, len, l),]
+            points = [glm.vec3(bvh.sum, 0, bvh.sum), glm.vec3(bvh.sum, 0, -bvh.sum), glm.vec3(-bvh.sum, 0, -bvh.sum), glm.vec3(-bvh.sum, 0, bvh.sum),
+                      glm.vec3(bvh.sum, len, bvh.sum), glm.vec3(bvh.sum, len, -bvh.sum), glm.vec3(-bvh.sum, len, -bvh.sum), glm.vec3(-bvh.sum, len, bvh.sum),]
             points = [(rotate*glm.vec4(x, 1)).xyz for x in points]
             indices = ['012', '023', '456', '467', '015', '054', '156', '167', '267', '273', '374', '340']
             for index in indices:
@@ -198,7 +208,7 @@ class Node:
     def draw_box(self, MVP_loc, VP):
         MVP = VP * self.global_transform
         
-        if self.box_vao is not None:
+        if self.box_vao is not None and self.level <= 2:
             glBindVertexArray(self.box_vao)
             glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
             
@@ -208,8 +218,7 @@ class Node:
             child.draw_box(MVP_loc, VP)
         
     def print_hierarchy(self, level = 0):
-        print('\t'*level + self.name + '\t' + 'link -> ')
-        print(self.link_transform)
+        print('\t'*level + self.name + '\t' + str(self.level))
         print()
         for child in self.children:
             child.print_hierarchy(level+1)
@@ -246,6 +255,7 @@ def load_bvh_file(path):
                 
                 if words[0] == 'OFFSET':
                     stack[-1].set_offset(float(words[1]), float(words[2]), float(words[3]))
+                    bvh.sum += glm.length(stack[-1].offset)*.0075
                 elif words[0] == '{':
                     1
                 elif words[0] == 'JOINT':
@@ -261,6 +271,7 @@ def load_bvh_file(path):
                     end_node = Node(stack[-1], 'End Site')
                     stack[-1].append_child(end_node)
                     stack.append(end_node)
+                    end_node.update_level(0)
                 
                 words = file.readline().split()
 

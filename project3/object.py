@@ -150,8 +150,7 @@ class Node:
     def prepare_box_vao(self):
         print(self.name)
         vertices = []
-        points = [glm.vec3(.1, 0, .1), glm.vec3(.1, 0, -.1), glm.vec3(-.1, 0, -.1), glm.vec3(-.1, 0, .1),
-                  glm.vec3(.1, 0, .1), glm.vec3(.1, 0, -.1), glm.vec3(-.1, 0, -.1), glm.vec3(-.1, 0, .1),]
+        
         if self.parent is not bvh.root:
             len = glm.length(self.offset)
             vec1 = glm.normalize(glm.vec3(0,len,0))
@@ -167,11 +166,15 @@ class Node:
             points = [glm.vec3(bvh.sum, 0, bvh.sum), glm.vec3(bvh.sum, 0, -bvh.sum), glm.vec3(-bvh.sum, 0, -bvh.sum), glm.vec3(-bvh.sum, 0, bvh.sum),
                       glm.vec3(bvh.sum, len, bvh.sum), glm.vec3(bvh.sum, len, -bvh.sum), glm.vec3(-bvh.sum, len, -bvh.sum), glm.vec3(-bvh.sum, len, bvh.sum),]
             points = [(rotate*glm.vec4(x, 1)).xyz for x in points]
-            indices = ['012', '023', '456', '467', '015', '054', '156', '167', '267', '273', '374', '340']
+            indices = ['021', '032', '456', '467', '015', '054', '165', '126', '276', '237', '347', '304']
+            
             for index in indices:
+                v1 = points[int(index[1])] - points[int(index[0])]
+                v2 = points[int(index[2])] - points[int(index[0])]
+                normal = glm.normalize(glm.cross(v1, v2))
                 for i in index:
                     vertices.append(points[int(i)])
-                    vertices.append(glm.vec3(.5, .5, 1))
+                    vertices.append(normal)
             
             vertices = glm.array(np.array(vertices))
             VAO = glGenVertexArrays(1)
@@ -205,17 +208,19 @@ class Node:
         for child in self.children:
             child.draw_line(MVP_loc, VP)
     
-    def draw_box(self, MVP_loc, VP):
+    def draw_box(self, MVP_normal_loc, M_normal_loc, view_pos_loc, VP, view_pos):
         MVP = VP * self.global_transform
         
         if self.box_vao is not None and self.level <= 2:
             glBindVertexArray(self.box_vao)
-            glUniformMatrix4fv(MVP_loc, 1, GL_FALSE, glm.value_ptr(MVP))
+            glUniformMatrix4fv(MVP_normal_loc, 1, GL_FALSE, glm.value_ptr(MVP))
+            glUniformMatrix4fv(M_normal_loc, 1, GL_FALSE, glm.value_ptr(self.global_transform))
+            glUniform3f(view_pos_loc, view_pos.x, view_pos.y, view_pos.z)
             
             glDrawArrays(GL_TRIANGLES, 0, self.box_cnt)
         
         for child in self.children:
-            child.draw_box(MVP_loc, VP)
+            child.draw_box(MVP_normal_loc, M_normal_loc, view_pos_loc, VP, view_pos)
         
     def print_hierarchy(self, level = 0):
         print('\t'*level + self.name + '\t' + str(self.level))

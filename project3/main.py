@@ -39,9 +39,13 @@ def main():
 
     # load shaders.
     shader_program = load_shaders(g_vertex_shader_src, g_fragment_shader_src)
+    shader_normal = load_shaders(g_vertex_shader_normal_src, g_fragment_shader_normal_src)
 
     # get uniform locations
     MVP_loc = glGetUniformLocation(shader_program, 'MVP')
+    MVP_normal_loc = glGetUniformLocation(shader_normal, 'MVP')
+    M_normal_loc = glGetUniformLocation(shader_normal, 'M')
+    view_pos_loc = glGetUniformLocation(shader_normal, 'view_pos')
     
     # prepare vaos
     num_of_lines = 100
@@ -108,9 +112,8 @@ def main():
         if modes.line is True:
             bvh.root.draw_line(MVP_loc, P*V)
         else:
-            bvh.root.draw_box(MVP_loc, P*V)
-        
-        
+            glUseProgram(shader_normal)
+            bvh.root.draw_box(MVP_normal_loc, M_normal_loc, view_pos_loc, P*V, camera.get_eye_pos())
         
         # swap front and back buffers
         glfwSwapBuffers(window)

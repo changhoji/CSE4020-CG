@@ -61,6 +61,9 @@ class Camera:
             glm.ortho(-self.distance*.45, self.distance*.45, -self.distance*.45, self.distance*.45, -self.distance*5, self.distance*5) if self.orthogonal
             else glm.perspective(glm.radians(45.), 1, .01, 1000)
             )
+        
+    def get_eye_pos(self):
+        return self.get_orbit()*self.distance + self.pan
 
 # make global camera
 camera = Camera()

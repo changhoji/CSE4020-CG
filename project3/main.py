@@ -36,6 +36,7 @@ def main():
     glfwSetScrollCallback(window, scroll_callback)
     glfwSetCursorPosCallback(window, cursor_callback)
     glfwSetMouseButtonCallback(window, mouse_button_callback)
+    glfwSetDropCallback(window, drop_callback)
 
     # load shaders.
     shader_program = load_shaders(g_vertex_shader_src, g_fragment_shader_src)
@@ -51,18 +52,16 @@ def main():
     num_of_lines = 100
     vao_grid = prepare_vao_grid(num_of_lines)
     
-    path = os.path.join("samples/jump-twist.bvh")
-    path = os.path.join("samples/sample-walk.bvh")
+    # path = os.path.join("samples/jump-twist.bvh")
+    # path = os.path.join("samples/sample-walk.bvh")
     # path = os.path.join("samples/sample-spin.bvh")
     # path = os.path.join("samples/jumping.bvh")
-    load_bvh_file(path)
+    # load_bvh_file(path)
     
-    bvh.root.print_hierarchy()
     
     toggle = 0
     curtime = time.time()
     frame_index = 0
-    bvh.adjust_frame(bvh.root, frame_index)
     
     # loop until the user closes the window
     while not glfwWindowShouldClose(window):
@@ -90,30 +89,31 @@ def main():
         glDrawArrays(GL_LINES, 0, num_of_lines*8+4+6)
         
         
-        # draw bvh objects
-        if modes.animating is True:
-            if toggle == 1:
-                if time.time() - curtime > bvh.frame_time:
-                    if frame_index < bvh.frame_number:
-                        curtime = time.time()
-                        bvh.adjust_frame(bvh.root, frame_index)
-                        frame_index += 1
-                        if frame_index == bvh.frame_number:
-                            frame_index = 0
+        if bvh.root is not None:
+            # draw bvh objects
+            if modes.animating is True:
+                if toggle == 1:
+                    if time.time() - curtime > bvh.frame_time:
+                        if frame_index < bvh.frame_number:
+                            curtime = time.time()
+                            bvh.adjust_frame(bvh.root, frame_index)
+                            frame_index += 1
+                            if frame_index == bvh.frame_number:
+                                frame_index = 0
+                else:
+                    frame_index = 0
+                    toggle = 1
+            elif modes.animating is False:
+                bvh.reset_pose(bvh.root)
+                toggle = 0
+            
+            bvh.root.update_tree_global_transform()
+            
+            if modes.line is True:
+                bvh.root.draw_line(MVP_loc, P*V)
             else:
-                frame_index = 0
-                toggle = 1
-        elif modes.animating is False:
-            bvh.reset_pose(bvh.root)
-            toggle = 0
-        
-        bvh.root.update_tree_global_transform()
-        
-        if modes.line is True:
-            bvh.root.draw_line(MVP_loc, P*V)
-        else:
-            glUseProgram(shader_normal)
-            bvh.root.draw_box(MVP_normal_loc, M_normal_loc, view_pos_loc, P*V, camera.get_eye_pos())
+                glUseProgram(shader_normal)
+                bvh.root.draw_box(MVP_normal_loc, M_normal_loc, view_pos_loc, P*V, camera.get_eye_pos())
         
         # swap front and back buffers
         glfwSwapBuffers(window)

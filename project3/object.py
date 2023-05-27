@@ -109,6 +109,7 @@ class Node:
             self.level = level
         else:
             self.level = min(self.level, level)
+            
         if self.parent is not None:
             self.parent.update_level(level+1)
         
@@ -148,7 +149,6 @@ class Node:
             child.prepare_line_vao()
             
     def prepare_box_vao(self):
-        print(self.name)
         vertices = []
         
         if self.parent is not bvh.root:
@@ -210,7 +210,6 @@ class Node:
     
     def draw_box(self, MVP_normal_loc, M_normal_loc, view_pos_loc, VP, view_pos):
         MVP = VP * self.global_transform
-        
         if self.box_vao is not None and self.level <= 2:
             glBindVertexArray(self.box_vao)
             glUniformMatrix4fv(MVP_normal_loc, 1, GL_FALSE, glm.value_ptr(MVP))
@@ -238,6 +237,7 @@ def load_bvh_file(path):
     root = None
     stack = []
     words = None
+    bvh.sum = 0
     
     with open(path, "r") as file:
         if section == None:

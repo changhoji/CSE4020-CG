@@ -11,6 +11,7 @@ class Bvh:
         self.frame_time = None
         self.frames = None
         self.sum = 0
+        self.max_level = 0 
         
     def set_attributes(self, root, frame_number, frame_time, frames):
         self.root = root
@@ -109,7 +110,9 @@ class Node:
             self.level = level
         else:
             self.level = min(self.level, level)
-            
+        
+        bvh.max_level = max(bvh.max_level, self.level)
+        
         if self.parent is not None:
             self.parent.update_level(level+1)
         
@@ -210,7 +213,7 @@ class Node:
     
     def draw_box(self, MVP_normal_loc, M_normal_loc, view_pos_loc, VP, view_pos):
         MVP = VP * self.global_transform
-        if self.box_vao is not None and self.level <= 2:
+        if self.box_vao is not None and self.level <= bvh.max_level-1:
             glBindVertexArray(self.box_vao)
             glUniformMatrix4fv(MVP_normal_loc, 1, GL_FALSE, glm.value_ptr(MVP))
             glUniformMatrix4fv(M_normal_loc, 1, GL_FALSE, glm.value_ptr(self.global_transform))
@@ -222,7 +225,7 @@ class Node:
             child.draw_box(MVP_normal_loc, M_normal_loc, view_pos_loc, VP, view_pos)
         
     def print_hierarchy(self, level = 0):
-        print('\t'*level + self.name + '\t' + str(self.level))
+        print('\t'*level + self.name)
         print()
         for child in self.children:
             child.print_hierarchy(level+1)
@@ -271,6 +274,13 @@ def load_bvh_file(path):
                     for i in range(int(words[1])):
                         stack[-1].append_channel(words[i+2])
                 elif words[0] == '}':
+                    # if stack[-1].name != 'End Site' and len(stack[-1].children) == 0:
+                    #     node = Node(stack[-1], 'End Site')
+                    #     temp = stack[-1].offset
+                    #     temp *= .3
+                    #     node.set_offset(temp.x, temp.y, temp.z)
+                    #     stack[-1].append_child(node)
+                    #     node.update_level(0)
                     stack.pop()
                 elif words[0] == 'End':
                     end_node = Node(stack[-1], 'End Site')

@@ -52,11 +52,14 @@ def main():
     num_of_lines = 100
     vao_grid = prepare_vao_grid(num_of_lines)
     
-    # path = os.path.join("samples/jump-twist.bvh")
-    # path = os.path.join("samples/sample-walk.bvh")
+    path = os.path.join("samples/jump-twist.bvh")
+    path = os.path.join("samples/sample-walk.bvh")
     # path = os.path.join("samples/sample-spin.bvh")
     # path = os.path.join("samples/jumping.bvh")
-    # load_bvh_file(path)
+    # path = os.path.join("samples/side-step.bvh")..
+    load_bvh_file(path)
+    
+    bvh.root.print_hierarchy()
     
     
     toggle = 0

@@ -67,13 +67,14 @@ in vec3 vout_normal;
 out vec4 FragColor;
 
 uniform vec3 view_pos;
+uniform vec3 light_pos;
 
 void main()
 {
     // light and material properties
-    vec3 light_pos = vec3(3,2,4);
+    // vec3 light_pos = vec3(3,2,4);
     vec3 light_color = vec3(1,1,1);
-    vec3 material_color = vec3(1,0,0);
+    vec3 material_color = vec3(1,1,0);
     float material_shininess = 32.0;
 
     // light components

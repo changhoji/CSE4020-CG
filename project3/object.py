@@ -127,8 +127,8 @@ class Node:
             child.update_tree_global_transform()
     
     def prepare_line_vao(self):
-        vertices = glm.array(glm.vec3(0, 0, 0), glm.vec3(1, 1, 1), 
-                                   self.offset, glm.vec3(1, 1, 1),
+        vertices = glm.array(glm.vec3(0, 0, 0), glm.vec3(.9, 1,.3), 
+                                   self.offset, glm.vec3(.9, 1, .3),
                                    )
         
         VAO = glGenVertexArrays(1)
@@ -211,22 +211,20 @@ class Node:
         for child in self.children:
             child.draw_line(MVP_loc, VP)
     
-    def draw_box(self, MVP_normal_loc, M_normal_loc, view_pos_loc, VP, view_pos):
+    def draw_box(self, VP, uniform_locs):
         MVP = VP * self.global_transform
         if self.box_vao is not None and self.level <= bvh.max_level-1:
             glBindVertexArray(self.box_vao)
-            glUniformMatrix4fv(MVP_normal_loc, 1, GL_FALSE, glm.value_ptr(MVP))
-            glUniformMatrix4fv(M_normal_loc, 1, GL_FALSE, glm.value_ptr(self.global_transform))
-            glUniform3f(view_pos_loc, view_pos.x, view_pos.y, view_pos.z)
+            glUniformMatrix4fv(uniform_locs['MVP'], 1, GL_FALSE, glm.value_ptr(MVP))
+            glUniformMatrix4fv(uniform_locs['M'], 1, GL_FALSE, glm.value_ptr(self.global_transform))
             
             glDrawArrays(GL_TRIANGLES, 0, self.box_cnt)
         
         for child in self.children:
-            child.draw_box(MVP_normal_loc, M_normal_loc, view_pos_loc, VP, view_pos)
+            child.draw_box(VP, uniform_locs)
         
     def print_hierarchy(self, level = 0):
         print('\t'*level + self.name)
-        print()
         for child in self.children:
             child.print_hierarchy(level+1)
 
@@ -241,6 +239,7 @@ def load_bvh_file(path):
     stack = []
     words = None
     bvh.sum = 0
+    num_of_joint = 0
     
     with open(path, "r") as file:
         if section == None:
@@ -270,6 +269,7 @@ def load_bvh_file(path):
                     node = Node(stack[-1], words[1])
                     stack[-1].append_child(node)
                     stack.append(node)
+                    num_of_joint += 1
                 elif words[0] == 'CHANNELS':
                     for i in range(int(words[1])):
                         stack[-1].append_channel(words[i+2])
@@ -287,6 +287,7 @@ def load_bvh_file(path):
                     stack[-1].append_child(end_node)
                     stack.append(end_node)
                     end_node.update_level(0)
+                    num_of_joint += 1
                 
                 words = file.readline().split()
 
@@ -308,6 +309,13 @@ def load_bvh_file(path):
         bvh.set_attributes(root, frame_number, frame_time, frames)
         bvh.root.prepare_line_vao()
         bvh.root.prepare_box_vao()
+    
+        print(f'file name: {os.path.basename(path)}')
+        print(f'number of frames: {bvh.frame_number}')
+        print(f'FPS: {1/bvh.frame_time}')
+        print(f'number of joints: {num_of_joint}')
+        print('all joint names: ')
+        bvh.root.print_hierarchy()
 
             
 bvh = Bvh()

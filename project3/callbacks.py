@@ -73,4 +73,3 @@ def cursor_callback(window, xpos, ypos):
 def drop_callback(window, paths):
     path = paths[0]
     load_bvh_file(path)
-    print('?')

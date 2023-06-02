@@ -47,20 +47,24 @@ def main():
     MVP_normal_loc = glGetUniformLocation(shader_normal, 'MVP')
     M_normal_loc = glGetUniformLocation(shader_normal, 'M')
     view_pos_loc = glGetUniformLocation(shader_normal, 'view_pos')
+    light_pos_loc = glGetUniformLocation(shader_normal, 'light_pos')
+    
+    uniform_locs = {}
+    uniform_locs['MVP'] = MVP_normal_loc
+    uniform_locs['M'] = M_normal_loc
+    uniform_locs['view_pos'] = view_pos_loc
+    uniform_locs['light_pos'] = light_pos_loc
     
     # prepare vaos
     num_of_lines = 100
     vao_grid = prepare_vao_grid(num_of_lines)
     
-    path = os.path.join("samples/jump-twist.bvh")
-    path = os.path.join("samples/sample-walk.bvh")
+    # path = os.path.join("samples/jump-twist.bvh")
+    # path = os.path.join("samples/sample-walk.bvh")
     # path = os.path.join("samples/sample-spin.bvh")
     # path = os.path.join("samples/jumping.bvh")
     # path = os.path.join("samples/side-step.bvh")..
-    load_bvh_file(path)
-    
-    bvh.root.print_hierarchy()
-    
+    # load_bvh_file(path)
     
     toggle = 0
     curtime = time.time()
@@ -89,7 +93,7 @@ def main():
 
         # draw lines in xz plane
         glBindVertexArray(vao_grid)
-        glDrawArrays(GL_LINES, 0, num_of_lines*8+4+6)
+        glDrawArrays(GL_LINES, 0, num_of_lines*8+4)
         
         
         if bvh.root is not None:
@@ -116,7 +120,11 @@ def main():
                 bvh.root.draw_line(MVP_loc, P*V)
             else:
                 glUseProgram(shader_normal)
-                bvh.root.draw_box(MVP_normal_loc, M_normal_loc, view_pos_loc, P*V, camera.get_eye_pos())
+                view = camera.get_eye_pos()
+                light = camera.get_light_pos(0, 0)
+                glUniform3f(view_pos_loc, view.x, view.y, view.z)
+                glUniform3f(light_pos_loc, light.x, light.y, light.z)
+                bvh.root.draw_box(P*V, uniform_locs)
         
         # swap front and back buffers
         glfwSwapBuffers(window)

@@ -155,6 +155,7 @@ class Node:
         vertices = []
         
         if self.parent is not bvh.root:
+            s = glm.length(self.offset)*.1
             len = glm.length(self.offset)
             vec1 = glm.normalize(glm.vec3(0,len,0))
             vec2 = glm.normalize(self.offset)
@@ -166,8 +167,8 @@ class Node:
             angle = glm.acos(dot)
             
             rotate = glm.rotate(angle, axis)
-            points = [glm.vec3(bvh.sum, 0, bvh.sum), glm.vec3(bvh.sum, 0, -bvh.sum), glm.vec3(-bvh.sum, 0, -bvh.sum), glm.vec3(-bvh.sum, 0, bvh.sum),
-                      glm.vec3(bvh.sum, len, bvh.sum), glm.vec3(bvh.sum, len, -bvh.sum), glm.vec3(-bvh.sum, len, -bvh.sum), glm.vec3(-bvh.sum, len, bvh.sum),]
+            points = [glm.vec3(s, 0, s), glm.vec3(s, 0, -s), glm.vec3(-s, 0, -s), glm.vec3(-s, 0, s),
+                      glm.vec3(s, len, s), glm.vec3(s, len, -s), glm.vec3(-s, len, -s), glm.vec3(-s, len, s),]
             points = [(rotate*glm.vec4(x, 1)).xyz for x in points]
             indices = ['021', '032', '456', '467', '015', '054', '165', '126', '276', '237', '347', '304']
             
@@ -224,7 +225,7 @@ class Node:
             child.draw_box(VP, uniform_locs)
         
     def print_hierarchy(self, level = 0):
-        print('\t'*level + self.name)
+        print(str(self.name), end=' ')
         for child in self.children:
             child.print_hierarchy(level+1)
 

@@ -1,6 +1,11 @@
-# 개요
+# Computer Graphics
 
--   cse4020 컴퓨터그래픽스
--   2023 1학기
+- HYU - CSE4020
+- Prof. Yoonsang Lee
 
-#
+# Projects
+
+- [Project1 - Basic OpenGL viewer](./project1/README.md)
+- [Project2 - Obj viewer & drawing a hierarchical model](./project2/README.md)
+- [Project3 - Bvh Viewer](./project3/README.md)
+  
